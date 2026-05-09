@@ -14,6 +14,7 @@ import Register from './pages/public/Register';
 import UserDashboard from './pages/user/UserDashboard';
 import ResumeBuilder from './pages/user/ResumeBuilder';
 import JobTracker from './pages/user/JobTracker';
+import ProfileSettings from './pages/user/ProfileSettings';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -36,7 +37,7 @@ function App() {
           <Route index element={<UserDashboard />} />
           <Route path="resumes" element={<ResumeBuilder />} />
           <Route path="jobs" element={<JobTracker />} />
-          <Route path="settings" element={<div className="p-6">Settings Page (Mock)</div>} />
+          <Route path="settings" element={<ProfileSettings />} />
         </Route>
 
         {/* Admin Dashboard Routes */}
@@ -45,7 +46,7 @@ function App() {
           <Route path="jobs" element={<AdminJobs />} />
           <Route path="applications" element={<AdminApplications />} />
           <Route path="users" element={<div className="p-6">User Management (Mock)</div>} />
-          <Route path="settings" element={<div className="p-6">Admin Settings (Mock)</div>} />
+          <Route path="settings" element={<ProfileSettings />} />
         </Route>
 
         {/* Fallback */}

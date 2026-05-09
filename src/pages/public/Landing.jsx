@@ -39,7 +39,7 @@ function Landing() {
               Our platform provides all the tools required to stand out in today's competitive job market.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <div className="glass-card p-8 space-y-4 hover:border-blue-500/50 transition-colors">
               <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center text-blue-500">
@@ -50,7 +50,7 @@ function Landing() {
                 Create ATS-friendly resumes in minutes with our intelligent drag-and-drop builder and AI suggestions.
               </p>
             </div>
-            
+
             <div className="glass-card p-8 space-y-4 hover:border-purple-500/50 transition-colors">
               <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center text-purple-500">
                 <Briefcase className="w-6 h-6" />
@@ -60,7 +60,7 @@ function Landing() {
                 Keep track of all your job applications, interviews, and offers in one centralized kanban board.
               </p>
             </div>
-            
+
             <div className="glass-card p-8 space-y-4 hover:border-green-500/50 transition-colors">
               <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center text-green-500">
                 <Zap className="w-6 h-6" />

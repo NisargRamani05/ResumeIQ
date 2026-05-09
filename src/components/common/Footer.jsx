@@ -15,7 +15,7 @@ function Footer() {
               The AI-powered platform for building professional resumes and tracking job applications seamlessly.
             </p>
           </div>
-          
+
           <div>
             <h4 className="mb-4 font-semibold text-white">Product</h4>
             <ul className="space-y-2 text-sm">
@@ -25,7 +25,7 @@ function Footer() {
               <li><a href="#" className="hover:text-blue-400 transition-colors">Pricing</a></li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="mb-4 font-semibold text-white">Resources</h4>
             <ul className="space-y-2 text-sm">
@@ -35,7 +35,7 @@ function Footer() {
               <li><a href="#" className="hover:text-blue-400 transition-colors">Interview Prep</a></li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="mb-4 font-semibold text-white">Legal</h4>
             <ul className="space-y-2 text-sm">
@@ -45,7 +45,7 @@ function Footer() {
             </ul>
           </div>
         </div>
-        
+
         <div className="mt-12 flex flex-col items-center justify-between border-t border-slate-800 pt-8 sm:flex-row">
           <p className="text-sm">© {new Date().getFullYear()} ResumeIQ. All rights reserved.</p>
         </div>
