@@ -1,19 +1,57 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import { loginUser, loginWithGoogle } from '../../firebase/auth';
+import toast from 'react-hot-toast';
 
 function Login() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
 
-  const handleLogin = (e, role) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Mock login routing based on selected role
-    if (role === 'admin') {
-      navigate('/admin');
-    } else {
-      navigate('/dashboard');
+    setLoading(true);
+    try {
+      const user = await loginUser(formData.email, formData.password);
+      toast.success("Successfully logged in!");
+      if (user.email === 'admin@gmail.com') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Failed to log in. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const user = await loginWithGoogle();
+      toast.success("Signed in with Google!");
+      if (user.email === 'admin@gmail.com') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Google sign-in failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,27 +65,22 @@ function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleLogin}>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Email</label>
-              <Input type="email" placeholder="name@example.com" />
+              <Input type="email" name="email" placeholder="name@example.com" value={formData.email} onChange={handleChange} required disabled={loading} />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-slate-300">Password</label>
                 <a href="#" className="text-sm text-blue-500 hover:text-blue-400">Forgot password?</a>
               </div>
-              <Input type="password" />
+              <Input type="password" name="password" value={formData.password} onChange={handleChange} required disabled={loading} />
             </div>
             
-            <div className="grid grid-cols-2 gap-4 pt-4">
-              <Button onClick={(e) => handleLogin(e, 'user')} className="w-full">
-                Login as User
-              </Button>
-              <Button onClick={(e) => handleLogin(e, 'admin')} variant="secondary" className="w-full">
-                Login as Admin
-              </Button>
-            </div>
+            <Button type="submit" className="w-full mt-6" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+            </Button>
           </form>
 
           <div className="relative my-6">
@@ -59,7 +92,7 @@ function Login() {
             </div>
           </div>
           
-          <Button variant="secondary" className="w-full bg-white text-slate-900 hover:bg-slate-200">
+          <Button variant="secondary" onClick={handleGoogleSignIn} disabled={loading} className="w-full bg-white text-slate-900 hover:bg-slate-200">
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

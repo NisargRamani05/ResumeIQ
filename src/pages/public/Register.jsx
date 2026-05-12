@@ -1,15 +1,66 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import { registerUser, loginWithGoogle } from '../../firebase/auth';
+import toast from 'react-hot-toast';
 
 function Register() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
 
-  const handleRegister = (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-    navigate('/dashboard'); // Mock successful registration
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const user = await registerUser(formData.email, formData.password, formData.name);
+      toast.success("Account created successfully!");
+      if (user.email === 'admin@gmail.com') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Failed to create account");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await loginWithGoogle();
+      toast.success("Signed in with Google!");
+      navigate('/dashboard');
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Google sign-in failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,23 +76,23 @@ function Register() {
           <form className="space-y-4" onSubmit={handleRegister}>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Full Name</label>
-              <Input type="text" placeholder="John Doe" />
+              <Input type="text" name="name" placeholder="John Doe" value={formData.name} onChange={handleChange} required disabled={loading} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Email</label>
-              <Input type="email" placeholder="name@example.com" />
+              <Input type="email" name="email" placeholder="name@example.com" value={formData.email} onChange={handleChange} required disabled={loading} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Password</label>
-              <Input type="password" />
+              <Input type="password" name="password" value={formData.password} onChange={handleChange} required disabled={loading} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Confirm Password</label>
-              <Input type="password" />
+              <Input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required disabled={loading} />
             </div>
             
-            <Button type="submit" className="w-full mt-6">
-              Create Account
+            <Button type="submit" className="w-full mt-6" disabled={loading}>
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
@@ -54,7 +105,7 @@ function Register() {
             </div>
           </div>
           
-          <Button variant="secondary" className="w-full bg-white text-slate-900 hover:bg-slate-200">
+          <Button variant="secondary" onClick={handleGoogleSignIn} disabled={loading} className="w-full bg-white text-slate-900 hover:bg-slate-200">
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
