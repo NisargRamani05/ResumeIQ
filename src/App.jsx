@@ -1,5 +1,6 @@
-﻿import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
@@ -10,6 +11,8 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Landing from "./pages/public/Landing";
 import Login from "./pages/public/Login";
 import Register from "./pages/public/Register";
+import Upload from "./pages/public/Upload";
+import Results from "./pages/public/Results";
 
 import UserDashboard from "./pages/user/UserDashboard";
 import MyResumes from "./pages/user/MyResumes";
@@ -24,41 +27,78 @@ import AdminJobs from "./pages/admin/AdminJobs";
 import AdminAddJob from "./pages/admin/AdminAddJob";
 import AdminApplications from "./pages/admin/AdminApplications";
 
+const PageWrapper = ({ children }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full h-full"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<PageWrapper><Landing /></PageWrapper>} />
+          <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+          <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
+          <Route path="/upload" element={<PageWrapper><Upload /></PageWrapper>} />
+          <Route path="/results" element={<PageWrapper><Results /></PageWrapper>} />
+        </Route>
+
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+          <Route index element={<PageWrapper><UserDashboard /></PageWrapper>} />
+          <Route path="resumes" element={<PageWrapper><MyResumes /></PageWrapper>} />
+          <Route path="resumes/new" element={<PageWrapper><ResumeBuilder /></PageWrapper>} />
+          <Route path="resumes/:id/edit" element={<PageWrapper><ResumeBuilder /></PageWrapper>} />
+          <Route path="jobs" element={<PageWrapper><JobsListing /></PageWrapper>} />
+          <Route path="jobs/:id" element={<PageWrapper><JobDetail /></PageWrapper>} />
+          <Route path="applications" element={<PageWrapper><JobTracker /></PageWrapper>} />
+          <Route path="settings" element={<PageWrapper><ProfileSettings /></PageWrapper>} />
+        </Route>
+
+        <Route path="/admin" element={<ProtectedRoute adminOnly={true}><DashboardLayout /></ProtectedRoute>}>
+          <Route index element={<PageWrapper><AdminDashboard /></PageWrapper>} />
+          <Route path="jobs" element={<PageWrapper><AdminJobs /></PageWrapper>} />
+          <Route path="jobs/new" element={<PageWrapper><AdminAddJob /></PageWrapper>} />
+          <Route path="jobs/:id/edit" element={<PageWrapper><AdminAddJob /></PageWrapper>} />
+          <Route path="applications" element={<PageWrapper><AdminApplications /></PageWrapper>} />
+          <Route path="users" element={<PageWrapper><div className="text-white">User Management (Coming Soon)</div></PageWrapper>} />
+          <Route path="settings" element={<PageWrapper><ProfileSettings /></PageWrapper>} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Toaster position="top-right" toastOptions={{ style: { background:"#1F2937", color:"#fff", border:"1px solid rgba(255,255,255,0.1)" } }}/>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-          </Route>
-
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-            <Route index element={<UserDashboard />} />
-            <Route path="resumes" element={<MyResumes />} />
-            <Route path="resumes/new" element={<ResumeBuilder />} />
-            <Route path="resumes/:id/edit" element={<ResumeBuilder />} />
-            <Route path="jobs" element={<JobsListing />} />
-            <Route path="jobs/:id" element={<JobDetail />} />
-            <Route path="applications" element={<JobTracker />} />
-            <Route path="settings" element={<ProfileSettings />} />
-          </Route>
-
-          <Route path="/admin" element={<ProtectedRoute adminOnly={true}><DashboardLayout /></ProtectedRoute>}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="jobs" element={<AdminJobs />} />
-            <Route path="jobs/new" element={<AdminAddJob />} />
-            <Route path="jobs/:id/edit" element={<AdminAddJob />} />
-            <Route path="applications" element={<AdminApplications />} />
-            <Route path="users" element={<div className="text-white">User Management (Coming Soon)</div>} />
-            <Route path="settings" element={<ProfileSettings />} />
-          </Route>
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Toaster 
+          position="top-right" 
+          toastOptions={{ 
+            style: { 
+              background: "var(--bg-card)", 
+              color: "var(--text-primary)", 
+              border: "1px solid var(--border)",
+              borderRadius: "12px",
+              boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)"
+            } 
+          }}
+        />
+        <AnimatedRoutes />
       </BrowserRouter>
     </AuthProvider>
   );
