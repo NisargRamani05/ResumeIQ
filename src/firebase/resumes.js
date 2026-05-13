@@ -48,3 +48,14 @@ export const getUserResumes = async (userId) => {
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   }
 };
+
+/** Get a single resume by ID */
+export const getResumeById = async (id) => {
+  const { getDoc } = await import("firebase/firestore");
+  const docRef = doc(db, "resumes", id);
+  const snap = await getDoc(docRef);
+  if (snap.exists()) {
+    return { id: snap.id, ...snap.data() };
+  }
+  return null;
+};

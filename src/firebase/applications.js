@@ -68,8 +68,12 @@ export const getAllApplications = async () => {
 };
 
 /** Update application status (admin) */
-export const updateApplicationStatus = async (appId, status) => {
-  await updateDoc(doc(db, "applications", appId), { status });
+export const updateApplicationStatus = async (appId, status, interviewDate = null) => {
+  const updateData = { status };
+  if (interviewDate) {
+    updateData.interviewDate = interviewDate;
+  }
+  await updateDoc(doc(db, "applications", appId), updateData);
 };
 
 /** Check if user has already applied to a job */

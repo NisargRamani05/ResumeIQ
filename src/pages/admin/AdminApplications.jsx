@@ -6,6 +6,8 @@ import { getJobs } from "../../firebase/jobs";
 import StatusBadge from "../../components/jobs/StatusBadge";
 import EmptyState from "../../components/ui/EmptyState";
 import { TableRowSkeleton } from "../../components/ui/LoadingSkeleton";
+import ResumeViewerModal from "../../components/admin/ResumeViewerModal";
+import InterviewScheduleModal from "../../components/admin/InterviewScheduleModal";
 import toast from "react-hot-toast";
 
 const STATUSES = ["Applied","Shortlisted","Interview Scheduled","Rejected","Selected"];
@@ -21,6 +23,8 @@ export default function AdminApplications() {
   const [filterJob, setFilterJob] = useState(prefilterJob);
   const [filterStatus, setFilterStatus] = useState("");
   const [updating, setUpdating] = useState(null);
+  const [viewingResumeId, setViewingResumeId] = useState(null);
+  const [schedulingApp, setSchedulingApp] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -38,10 +42,18 @@ export default function AdminApplications() {
   useEffect(() => { load(); }, []);
 
   const handleStatusChange = async (appId, newStatus) => {
+    if (newStatus === "Interview Scheduled") {
+      setSchedulingApp({ appId, newStatus });
+      return;
+    }
+    await processStatusUpdate(appId, newStatus, null);
+  };
+
+  const processStatusUpdate = async (appId, newStatus, interviewDate = null) => {
     setUpdating(appId);
     try {
-      await updateApplicationStatus(appId, newStatus);
-      setApplications(p => p.map(a => a.id===appId ? {...a, status:newStatus} : a));
+      await updateApplicationStatus(appId, newStatus, interviewDate);
+      setApplications(p => p.map(a => a.id===appId ? {...a, status:newStatus, interviewDate: interviewDate || a.interviewDate} : a));
       toast.success("Status updated");
     } catch { toast.error("Failed to update status"); }
     finally { setUpdating(null); }
@@ -115,11 +127,22 @@ export default function AdminApplications() {
                   <td className="px-5 py-4">
                     {app.resumeUrl ? (
                       <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-xs font-medium" onClick={e=>e.stopPropagation()}>
-                        <ExternalLink className="w-3.5 h-3.5"/> Open
+                        <ExternalLink className="w-3.5 h-3.5"/> Open File
                       </a>
+                    ) : app.resumeId ? (
+                      <button onClick={() => setViewingResumeId(app.resumeId)} className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 text-xs font-medium">
+                        <ExternalLink className="w-3.5 h-3.5"/> View Resume
+                      </button>
                     ) : <span className="text-slate-600 text-xs">No file</span>}
                   </td>
-                  <td className="px-5 py-4"><StatusBadge status={app.status}/></td>
+                  <td className="px-5 py-4">
+                    <StatusBadge status={app.status}/>
+                    {app.status === "Interview Scheduled" && app.interviewDate && (
+                      <div className="text-[10px] text-blue-300 mt-1 whitespace-nowrap bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 inline-block">
+                        {app.interviewDate}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
                       <select
@@ -139,6 +162,20 @@ export default function AdminApplications() {
           </table>
         </div>
       </div>
+      
+      {viewingResumeId && (
+        <ResumeViewerModal resumeId={viewingResumeId} onClose={() => setViewingResumeId(null)} />
+      )}
+
+      {schedulingApp && (
+        <InterviewScheduleModal 
+          onClose={() => setSchedulingApp(null)}
+          onSubmit={async (dateString) => {
+            await processStatusUpdate(schedulingApp.appId, schedulingApp.newStatus, dateString);
+            setSchedulingApp(null);
+          }}
+        />
+      )}
     </div>
   );
 }

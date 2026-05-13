@@ -116,6 +116,11 @@ export default function JobTracker() {
                                   </div>
                                   <span className={`text-sm font-medium ${done||cur?"text-white":"text-slate-500"}`}>{s}</span>
                                   {cur && <span className="text-xs text-blue-400 font-medium">← Current</span>}
+                                  {cur && s === "Interview Scheduled" && app.interviewDate && (
+                                    <span className="text-xs text-blue-300 font-medium bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 ml-2">
+                                      {app.interviewDate}
+                                    </span>
+                                  )}
                                 </div>
                               );
                             })}
