@@ -75,70 +75,70 @@ export default function AdminApplications() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Applications</h1>
-        <p className="text-slate-400 text-sm mt-0.5">{applications.length} total application{applications.length!==1?"s":""}</p>
+        <h1 className="text-2xl font-display font-bold text-[var(--text-primary)]">Applications</h1>
+        <p className="text-[var(--text-muted)] text-sm mt-0.5">{applications.length} total application{applications.length!==1?"s":""}</p>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"/>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name, email or role..." className="w-full bg-[#0d1a2d] border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-sm text-white outline-none placeholder-slate-500 focus:border-blue-500 transition-colors"/>
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]"/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name, email or role..." className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl pl-11 pr-4 py-2.5 text-sm text-[var(--text-primary)] outline-none placeholder-[var(--text-muted)] focus:border-[var(--accent-primary)] transition-colors"/>
         </div>
-        <select value={filterJob} onChange={e=>setFilterJob(e.target.value)} className="bg-[#0d1a2d] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 min-w-[180px]">
+        <select value={filterJob} onChange={e=>setFilterJob(e.target.value)} className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent-primary)] min-w-[180px]">
           <option value="">All Jobs</option>
           {jobs.map(j=><option key={j.id} value={j.id}>{j.role} — {j.companyName}</option>)}
         </select>
-        <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="bg-[#0d1a2d] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500 min-w-[150px]">
+        <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent-primary)] min-w-[150px]">
           <option value="">All Statuses</option>
           {STATUSES.map(s=><option key={s}>{s}</option>)}
         </select>
       </div>
 
       {/* Table */}
-      <div className="bg-[#0d1a2d] border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="glass-card rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="border-b border-slate-800 bg-slate-900/60">
+            <thead className="border-b border-[var(--border)] bg-[var(--bg-secondary)]">
               <tr>
                 {["Applicant","Position","Applied On","Resume","Status","Update"].map(h=>(
-                  <th key={h} className="px-5 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wide">{h}</th>
+                  <th key={h} className="px-5 py-4 text-xs font-bold text-[var(--text-muted)] uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? Array.from({length:5}).map((_,i)=><TableRowSkeleton key={i} cols={6}/>) : filtered.length===0 ? (
-                <tr><td colSpan={6} className="py-16 text-center text-slate-500">No applications found</td></tr>
+                <tr><td colSpan={6} className="py-16 text-center text-[var(--text-muted)]">No applications found</td></tr>
               ) : filtered.map(app=>(
-                <tr key={app.id} className="border-b border-slate-800/60 hover:bg-slate-800/20 transition-colors">
+                <tr key={app.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-secondary)] transition-colors">
                   <td className="px-5 py-4">
                     <div>
-                      <p className="text-white font-medium">{app.userName||"—"}</p>
-                      <p className="text-slate-500 text-xs">{app.userEmail||"—"}</p>
+                      <p className="text-[var(--text-primary)] font-bold">{app.userName||"—"}</p>
+                      <p className="text-[var(--text-muted)] text-xs font-semibold">{app.userEmail||"—"}</p>
                     </div>
                   </td>
                   <td className="px-5 py-4">
                     <div>
-                      <p className="text-slate-200 font-medium">{app.jobTitle||"—"}</p>
-                      <p className="text-slate-500 text-xs">{app.companyName||"—"}</p>
+                      <p className="text-[var(--text-primary)] font-bold">{app.jobTitle||"—"}</p>
+                      <p className="text-[var(--text-muted)] text-xs font-semibold">{app.companyName||"—"}</p>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-slate-400">{fmt(app.appliedAt)}</td>
+                  <td className="px-5 py-4 text-[var(--text-muted)] font-medium">{fmt(app.appliedAt)}</td>
                   <td className="px-5 py-4">
                     {app.resumeUrl ? (
-                      <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-xs font-medium" onClick={e=>e.stopPropagation()}>
+                      <a href={app.resumeUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-[var(--accent-primary)] hover:underline text-xs font-bold" onClick={e=>e.stopPropagation()}>
                         <ExternalLink className="w-3.5 h-3.5"/> Open File
                       </a>
                     ) : app.resumeId ? (
-                      <button onClick={() => setViewingResumeId(app.resumeId)} className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 text-xs font-medium">
+                      <button onClick={() => setViewingResumeId(app.resumeId)} className="flex items-center gap-1.5 text-[#10b981] hover:underline text-xs font-bold">
                         <ExternalLink className="w-3.5 h-3.5"/> View Resume
                       </button>
-                    ) : <span className="text-slate-600 text-xs">No file</span>}
+                    ) : <span className="text-[var(--text-muted)] text-xs font-semibold">No file</span>}
                   </td>
                   <td className="px-5 py-4">
                     <StatusBadge status={app.status}/>
                     {app.status === "Interview Scheduled" && app.interviewDate && (
-                      <div className="text-[10px] text-blue-300 mt-1 whitespace-nowrap bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 inline-block">
+                      <div className="text-[10px] text-white font-bold mt-2 whitespace-nowrap bg-[#10b981] px-2 py-0.5 rounded-full border border-[#10b981]/20 inline-block shadow-sm">
                         {app.interviewDate}
                       </div>
                     )}
@@ -149,11 +149,11 @@ export default function AdminApplications() {
                         value={app.status}
                         onChange={e=>handleStatusChange(app.id, e.target.value)}
                         disabled={updating===app.id}
-                        className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2 py-1.5 outline-none focus:border-blue-500 disabled:opacity-50"
+                        className="bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-primary)] text-xs font-bold rounded-lg px-2 py-1.5 outline-none focus:border-[var(--accent-primary)] disabled:opacity-50"
                       >
                         {STATUSES.map(s=><option key={s}>{s}</option>)}
                       </select>
-                      {updating===app.id && <Loader className="w-3.5 h-3.5 text-blue-400 animate-spin"/>}
+                      {updating===app.id && <Loader className="w-3.5 h-3.5 text-[var(--accent-primary)] animate-spin"/>}
                     </div>
                   </td>
                 </tr>

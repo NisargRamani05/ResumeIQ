@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Eye, EyeOff, ChevronRight, ChevronLeft, CheckCircle, User, Briefcase, GraduationCap, Star, FileText, X, Save, Loader } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, ChevronRight, ChevronLeft, CheckCircle, User, Briefcase, GraduationCap, Star, FileText, X, Save, Loader, Award, BookOpen } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import { createResume, updateResume, getUserResumes } from "../../firebase/resumes";
+import ResumeTemplate from "../../components/resume/ResumeTemplate";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const YEARS = Array.from({ length: 50 }, (_, i) => String(new Date().getFullYear() - i));
@@ -14,12 +15,13 @@ const STEPS = [
   { id: "experience", label: "Experience", desc: "Work history", icon: Briefcase },
   { id: "education", label: "Education", desc: "Academic background", icon: GraduationCap },
   { id: "skills", label: "Skills", desc: "Your expertise", icon: Star },
-  { id: "summary", label: "Summary", desc: "Career overview", icon: FileText },
+  { id: "achievements", label: "Achievements", desc: "Awards & milestones", icon: Award },
+  { id: "summary", label: "Bio & Summary", desc: "Profile overview", icon: BookOpen },
 ];
 const newExp = () => ({ id: Date.now(), jobTitle: "", employer: "", city: "", startMonth: "", startYear: "", endMonth: "", endYear: "", current: false, bullets: [""] });
-const newEdu = () => ({ id: Date.now(), school: "", degree: "", field: "", gradMonth: "", gradYear: "" });
-const INP = "w-full bg-[#0d1a2d] border border-slate-700 hover:border-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg px-4 py-2.5 text-sm text-white outline-none placeholder-slate-500 transition-all";
-const LBL = "block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5";
+const newEdu = () => ({ id: Date.now(), school: "", degree: "", field: "", gradMonth: "", gradYear: "", status: "Completed", cgpa: "", startYear: "", location: "" });
+const INP = "w-full bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--text-muted)] focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)] rounded-lg px-4 py-3 text-sm text-[var(--text-primary)] outline-none placeholder-[var(--text-muted)] transition-all";
+const LBL = "block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wide mb-2";
 
 export default function ResumeBuilder() {
   const navigate = useNavigate();
@@ -32,11 +34,13 @@ export default function ResumeBuilder() {
   const [saving, setSaving] = useState(false);
   const [loadingResume, setLoadingResume] = useState(isEditing);
   const [title, setTitle] = useState("My Resume");
-  const [contact, setContact] = useState({ firstName: "", lastName: "", email: "", phone: "", city: "", state: "", linkedin: "" });
+  const [contact, setContact] = useState({ firstName: "", lastName: "", email: "", phone: "", city: "", state: "", linkedin: "", github: "", jobTitle: "" });
   const [experiences, setExperiences] = useState([newExp()]);
   const [educations, setEducations] = useState([newEdu()]);
   const [skills, setSkills] = useState([""]);
   const [summary, setSummary] = useState("");
+  const [bio, setBio] = useState("");
+  const [achievements, setAchievements] = useState([""]);
   const [dir, setDir] = useState(1);
 
   // Load existing resume from Firestore if editing
@@ -49,11 +53,14 @@ export default function ResumeBuilder() {
         const found = all.find(r => r.id === id);
         if (found) {
           setTitle(found.title || "My Resume");
-          setContact(found.data?.contact || { firstName: "", lastName: "", email: "", phone: "", city: "", state: "", linkedin: "" });
+          setContact(found.data?.contact || { firstName: "", lastName: "", email: "", phone: "", city: "", state: "", linkedin: "", github: "", jobTitle: "" });
           setExperiences(found.data?.experiences || [newExp()]);
           setEducations(found.data?.educations || [newEdu()]);
           setSkills(found.data?.skills || [""]);
           setSummary(found.data?.summary || "");
+          setBio(found.data?.bio || "");
+          setAchievements(found.data?.achievements || [""]);
+          
         } else {
           toast.error("Resume not found");
           navigate("/dashboard/resumes");
@@ -80,7 +87,7 @@ export default function ResumeBuilder() {
   const handleSave = async () => {
     if (!currentUser) { toast.error("Please log in to save"); return; }
     setSaving(true);
-    const resumeData = { contact, experiences, educations, skills, summary };
+    const resumeData = { contact, experiences, educations, skills, summary, bio, achievements };
     try {
       if (isEditing) {
         await updateResume(id, { title, data: resumeData });
@@ -104,178 +111,182 @@ export default function ResumeBuilder() {
     exit: (d) => ({ x: d > 0 ? -40 : 40, opacity: 0 }),
   };
 
-  const previewContent = (
-    <div className="bg-white rounded-lg p-8 text-slate-900" style={{ fontFamily: "Georgia,serif" }}>
-      <header className="text-center border-b-2 border-slate-900 pb-4 mb-5">
-        <h1 className="text-xl font-black uppercase tracking-widest">{(contact.firstName || "Your") + " " + (contact.lastName || "Name")}</h1>
-        <div className="flex flex-wrap items-center justify-center gap-x-3 text-xs text-slate-500 mt-1">
-          {contact.email && <span>{contact.email}</span>}
-          {contact.phone && <><span>|</span><span>{contact.phone}</span></>}
-          {(contact.city || contact.state) && <><span>|</span><span>{[contact.city, contact.state].filter(Boolean).join(", ")}</span></>}
-        </div>
-      </header>
-      {summary && <section className="mb-3"><h2 className="text-xs font-black uppercase tracking-widest border-b border-slate-200 pb-1 mb-1">Summary</h2><p className="text-xs text-slate-600 leading-relaxed">{summary}</p></section>}
-      {experiences.some(e => e.jobTitle || e.employer) && (
-        <section className="mb-3">
-          <h2 className="text-xs font-black uppercase tracking-widest border-b border-slate-200 pb-1 mb-1">Experience</h2>
-          {experiences.filter(e => e.jobTitle || e.employer).map(exp => (
-            <div key={exp.id} className="mb-2">
-              <div className="flex justify-between"><span className="text-sm font-bold">{exp.jobTitle}</span><span className="text-xs text-slate-400">{exp.startMonth} {exp.startYear}{(exp.startMonth || exp.startYear) ? " – " : ""}{exp.current ? "Present" : `${exp.endMonth} ${exp.endYear}`}</span></div>
-              <p className="text-xs text-slate-500 italic">{exp.employer}{exp.city ? `, ${exp.city}` : ""}</p>
-              {exp.bullets.filter(b => b).map((b, i) => <div key={i} className="flex gap-1 mt-0.5"><span className="text-slate-400">•</span><span className="text-xs text-slate-600">{b}</span></div>)}
-            </div>
-          ))}
-        </section>
-      )}
-      {educations.some(e => e.school) && (
-        <section className="mb-3">
-          <h2 className="text-xs font-black uppercase tracking-widest border-b border-slate-200 pb-1 mb-1">Education</h2>
-          {educations.filter(e => e.school).map(edu => (
-            <div key={edu.id} className="mb-2">
-              <div className="flex justify-between"><span className="text-sm font-bold">{edu.degree}{edu.field ? ` – ${edu.field}` : ""}</span><span className="text-xs text-slate-400">{edu.gradMonth} {edu.gradYear}</span></div>
-              <p className="text-xs text-slate-500 italic">{edu.school}</p>
-            </div>
-          ))}
-        </section>
-      )}
-      {skills.filter(s => s).length > 0 && (
-        <section>
-          <h2 className="text-xs font-black uppercase tracking-widest border-b border-slate-200 pb-1 mb-1">Skills</h2>
-          <div className="flex flex-wrap gap-1">{skills.filter(s => s).map((s, i) => <span key={i} className="text-xs bg-slate-100 border border-slate-200 text-slate-700 px-2 py-0.5 rounded-full">{s}</span>)}</div>
-        </section>
-      )}
-    </div>
-  );
+  const previewContent = <ResumeTemplate data={{ contact, experiences, educations, skills, summary, bio, achievements }} />;
 
   if (loadingResume) return (
-    <div className="flex items-center justify-center h-screen bg-slate-950">
-      <Loader className="w-8 h-8 text-blue-400 animate-spin" />
+    <div className="flex items-center justify-center h-screen bg-[var(--bg-primary)]">
+      <Loader className="w-8 h-8 text-[var(--accent-primary)] animate-spin" />
     </div>
   );
 
   return (
-    <div className="flex h-full min-h-screen bg-slate-950" style={{ margin: "-24px" }}>
+    <div className="flex h-full min-h-screen bg-[var(--bg-primary)]" style={{ margin: "-24px" }}>
       {/* ── LEFT: form area ── */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header bar */}
-        <div className="shrink-0 bg-slate-900 border-b border-slate-800 px-8 py-4 flex items-center gap-4">
-          <button onClick={() => navigate("/dashboard/resumes")} className="text-slate-400 hover:text-white transition-colors">
+        <div className="shrink-0 bg-[var(--bg-card)] border-b border-[var(--border)] px-8 py-5 flex items-center gap-5 shadow-sm">
+          <button onClick={() => navigate("/dashboard/resumes")} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] p-2 rounded-lg transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <input
-            className="bg-transparent border-b border-slate-700 focus:border-blue-500 text-white font-semibold text-sm outline-none px-1 py-0.5 w-52 transition-colors"
+            className="bg-transparent border-b-2 border-transparent focus:border-[var(--accent-primary)] text-[var(--text-primary)] font-display font-bold text-lg outline-none px-1 py-1 w-64 transition-colors placeholder-[var(--text-muted)]"
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="Resume title..."
           />
           <div className="flex-1" />
-          <button onClick={() => setPreview(p => !p)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-blue-400 border border-slate-700 hover:border-blue-600/50 transition-all">
+          <button onClick={() => setPreview(p => !p)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-[var(--text-primary)] hover:text-[var(--accent-primary)] border border-[var(--border)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)]/50 hover:bg-[var(--accent-primary)]/10 transition-all shadow-sm">
             {preview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             {preview ? "Hide Preview" : "Preview"}
           </button>
         </div>
 
         {/* Scrollable form */}
-        <div className="flex-1 overflow-y-auto px-8 py-10">
-          <div className="max-w-2xl mx-auto">
+        <div className="flex-1 overflow-y-auto px-8 py-10 relative">
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[var(--accent-primary)]/5 blur-[120px] rounded-full pointer-events-none" />
+          
+          <div className="max-w-2xl mx-auto relative z-10">
             <AnimatePresence mode="wait" custom={dir}>
-              <motion.div key={step} custom={dir} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.22, ease: "easeInOut" }}>
+              <motion.div key={step} custom={dir} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.25, ease: "easeInOut" }}>
 
                 {step === 0 && (
                   <div className="space-y-6">
-                    <div><h2 className="text-2xl font-bold text-white">Contact Information</h2><p className="text-slate-400 text-sm mt-1">How can employers reach you?</p></div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div><h2 className="text-3xl font-display font-bold text-[var(--text-primary)]">Contact Information</h2><p className="text-[var(--text-muted)] text-sm mt-1">How can employers reach you?</p></div>
+                    <div className="glass-card border border-[var(--border)] rounded-2xl p-8 grid grid-cols-2 gap-6">
                       <div><label className={LBL}>First Name</label><input className={INP} value={contact.firstName} onChange={e => setC("firstName", e.target.value)} placeholder="John" /></div>
                       <div><label className={LBL}>Last Name</label><input className={INP} value={contact.lastName} onChange={e => setC("lastName", e.target.value)} placeholder="Doe" /></div>
+                      <div className="col-span-2"><label className={LBL}>Job Title / Role</label><input className={INP} value={contact.jobTitle} onChange={e => setC("jobTitle", e.target.value)} placeholder="DevOps / Cloud Engineer" /></div>
                       <div><label className={LBL}>Email</label><input className={INP} type="email" value={contact.email} onChange={e => setC("email", e.target.value)} placeholder="john@example.com" /></div>
                       <div><label className={LBL}>Phone</label><input className={INP} value={contact.phone} onChange={e => setC("phone", e.target.value)} placeholder="+91 98765 43210" /></div>
                       <div><label className={LBL}>City</label><input className={INP} value={contact.city} onChange={e => setC("city", e.target.value)} placeholder="Mumbai" /></div>
                       <div><label className={LBL}>State</label><input className={INP} value={contact.state} onChange={e => setC("state", e.target.value)} placeholder="Maharashtra" /></div>
-                      <div className="col-span-2"><label className={LBL}>LinkedIn (optional)</label><input className={INP} value={contact.linkedin} onChange={e => setC("linkedin", e.target.value)} placeholder="linkedin.com/in/yourname" /></div>
+                      <div><label className={LBL}>LinkedIn (optional)</label><input className={INP} value={contact.linkedin} onChange={e => setC("linkedin", e.target.value)} placeholder="linkedin.com/in/yourname" /></div>
+                      <div><label className={LBL}>GitHub (optional)</label><input className={INP} value={contact.github} onChange={e => setC("github", e.target.value)} placeholder="github.com/yourname" /></div>
                     </div>
                   </div>
                 )}
 
                 {step === 1 && (
-                  <div className="space-y-5">
-                    <div><h2 className="text-2xl font-bold text-white">Work History</h2><p className="text-slate-400 text-sm mt-1">List your most recent positions first.</p></div>
+                  <div className="space-y-6">
+                    <div><h2 className="text-3xl font-display font-bold text-[var(--text-primary)]">Work History</h2><p className="text-[var(--text-muted)] text-sm mt-1">List your most recent positions first.</p></div>
                     {experiences.map((exp, ei) => (
-                      <div key={exp.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-semibold text-slate-300">Position {ei + 1}</span>
-                          {experiences.length > 1 && <button onClick={() => setExperiences(p => p.filter(e => e.id !== exp.id))} className="text-slate-500 hover:text-red-400 transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                      <div key={exp.id} className="glass-card border border-[var(--border)] rounded-3xl p-8 space-y-6 relative overflow-hidden group">
+                        <div className="absolute top-0 inset-x-0 h-1 bg-[var(--accent-primary)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex justify-between items-center pb-4 border-b border-[var(--border)]">
+                          <span className="text-sm font-bold text-[var(--text-primary)] bg-[var(--bg-secondary)] px-4 py-1.5 rounded-full border border-[var(--border)]">Position {ei + 1}</span>
+                          {experiences.length > 1 && <button onClick={() => setExperiences(p => p.filter(e => e.id !== exp.id))} className="text-[var(--text-muted)] hover:text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>}
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-5">
                           <div><label className={LBL}>Job Title</label><input className={INP} value={exp.jobTitle} onChange={e => updExp(exp.id, "jobTitle", e.target.value)} placeholder="Software Engineer" /></div>
                           <div><label className={LBL}>Employer</label><input className={INP} value={exp.employer} onChange={e => updExp(exp.id, "employer", e.target.value)} placeholder="Company Name" /></div>
-                          <div><label className={LBL}>City</label><input className={INP} value={exp.city} onChange={e => updExp(exp.id, "city", e.target.value)} placeholder="Mumbai" /></div>
+                          <div className="col-span-2"><label className={LBL}>City</label><input className={INP} value={exp.city} onChange={e => updExp(exp.id, "city", e.target.value)} placeholder="Mumbai" /></div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-5">
                           <div><label className={LBL}>Start Date</label><div className="flex gap-2"><select className={INP} value={exp.startMonth} onChange={e => updExp(exp.id, "startMonth", e.target.value)}><option value="">Month</option>{MONTHS.map(m => <option key={m}>{m}</option>)}</select><select className={INP} value={exp.startYear} onChange={e => updExp(exp.id, "startYear", e.target.value)}><option value="">Year</option>{YEARS.map(y => <option key={y}>{y}</option>)}</select></div></div>
                           {!exp.current && <div><label className={LBL}>End Date</label><div className="flex gap-2"><select className={INP} value={exp.endMonth} onChange={e => updExp(exp.id, "endMonth", e.target.value)}><option value="">Month</option>{MONTHS.map(m => <option key={m}>{m}</option>)}</select><select className={INP} value={exp.endYear} onChange={e => updExp(exp.id, "endYear", e.target.value)}><option value="">Year</option>{YEARS.map(y => <option key={y}>{y}</option>)}</select></div></div>}
                         </div>
-                        <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer"><input type="checkbox" checked={exp.current} onChange={e => updExp(exp.id, "current", e.target.checked)} className="accent-blue-500 w-4 h-4" />I currently work here</label>
-                        <div>
+                        <label className="flex items-center gap-3 text-sm text-[var(--text-primary)] font-semibold cursor-pointer select-none bg-[var(--bg-secondary)] p-4 rounded-xl border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors"><input type="checkbox" checked={exp.current} onChange={e => updExp(exp.id, "current", e.target.checked)} className="accent-[var(--accent-primary)] w-5 h-5 cursor-pointer" />I currently work here</label>
+                        <div className="pt-2">
                           <label className={LBL}>Key Achievements</label>
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             {exp.bullets.map((b, bi) => (
-                              <div key={bi} className="flex gap-2 items-center">
-                                <span className="text-blue-500 text-lg leading-none">•</span>
+                              <div key={bi} className="flex gap-3 items-start">
+                                <span className="text-[var(--accent-primary)] text-xl leading-none pt-2">•</span>
                                 <input className={`${INP} flex-1`} value={b} onChange={e => updBul(exp.id, bi, e.target.value)} placeholder="Describe an achievement..." />
-                                {exp.bullets.length > 1 && <button onClick={() => remBul(exp.id, bi)} className="text-slate-600 hover:text-red-400"><X className="w-4 h-4" /></button>}
+                                {exp.bullets.length > 1 && <button onClick={() => remBul(exp.id, bi)} className="text-[var(--text-muted)] hover:text-red-500 p-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg hover:border-red-500/50 hover:bg-red-500/10 transition-colors"><X className="w-4 h-4" /></button>}
                               </div>
                             ))}
-                            <button onClick={() => addBul(exp.id)} className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"><Plus className="w-3.5 h-3.5" />Add bullet</button>
+                            <button onClick={() => addBul(exp.id)} className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)] text-sm font-bold flex items-center gap-1.5 mt-2 px-4 py-2 rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"><Plus className="w-4 h-4" />Add bullet point</button>
                           </div>
                         </div>
                       </div>
                     ))}
-                    <button onClick={() => setExperiences(p => [...p, newExp()])} className="w-full py-3 border-2 border-dashed border-slate-800 hover:border-blue-600/50 rounded-xl text-slate-500 hover:text-blue-400 text-sm flex items-center justify-center gap-2 transition-all"><Plus className="w-4 h-4" />Add Another Position</button>
+                    <button onClick={() => setExperiences(p => [...p, newExp()])} className="w-full py-4 border-2 border-dashed border-[var(--border)] hover:border-[var(--accent-primary)] bg-[var(--bg-secondary)]/50 hover:bg-[var(--accent-primary)]/5 rounded-2xl text-[var(--text-muted)] hover:text-[var(--accent-primary)] font-bold text-sm flex items-center justify-center gap-2 transition-all"><Plus className="w-5 h-5" />Add Another Position</button>
                   </div>
                 )}
 
                 {step === 2 && (
-                  <div className="space-y-5">
-                    <div><h2 className="text-2xl font-bold text-white">Education</h2><p className="text-slate-400 text-sm mt-1">Your academic background.</p></div>
+                  <div className="space-y-6">
+                    <div><h2 className="text-3xl font-display font-bold text-[var(--text-primary)]">Education</h2><p className="text-[var(--text-muted)] text-sm mt-1">Your academic background.</p></div>
                     {educations.map((edu, ei) => (
-                      <div key={edu.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-semibold text-slate-300">Education {ei + 1}</span>
-                          {educations.length > 1 && <button onClick={() => setEducations(p => p.filter(e => e.id !== edu.id))} className="text-slate-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>}
+                      <div key={edu.id} className="glass-card border border-[var(--border)] rounded-3xl p-8 space-y-6 relative overflow-hidden group">
+                        <div className="absolute top-0 inset-x-0 h-1 bg-[var(--accent-primary)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex justify-between items-center pb-4 border-b border-[var(--border)]">
+                          <span className="text-sm font-bold text-[var(--text-primary)] bg-[var(--bg-secondary)] px-4 py-1.5 rounded-full border border-[var(--border)]">Education {ei + 1}</span>
+                          {educations.length > 1 && <button onClick={() => setEducations(p => p.filter(e => e.id !== edu.id))} className="text-[var(--text-muted)] hover:text-red-500 hover:bg-red-500/10 p-2 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>}
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="col-span-2"><label className={LBL}>School / University</label><input className={INP} value={edu.school} onChange={e => updEdu(edu.id, "school", e.target.value)} placeholder="University of Mumbai" /></div>
+                        <div className="grid grid-cols-2 gap-5">
+                          <div className="col-span-2"><label className={LBL}>School / University</label><input className={INP} value={edu.school} onChange={e => updEdu(edu.id, "school", e.target.value)} placeholder="CHARUSAT University" /></div>
                           <div><label className={LBL}>Degree</label><select className={INP} value={edu.degree} onChange={e => updEdu(edu.id, "degree", e.target.value)}><option value="">Select degree</option>{DEGREES.map(d => <option key={d}>{d}</option>)}</select></div>
                           <div><label className={LBL}>Field of Study</label><input className={INP} value={edu.field} onChange={e => updEdu(edu.id, "field", e.target.value)} placeholder="Computer Science" /></div>
-                          <div><label className={LBL}>Graduation Date</label><div className="flex gap-2"><select className={INP} value={edu.gradMonth} onChange={e => updEdu(edu.id, "gradMonth", e.target.value)}><option value="">Month</option>{MONTHS.map(m => <option key={m}>{m}</option>)}</select><select className={INP} value={edu.gradYear} onChange={e => updEdu(edu.id, "gradYear", e.target.value)}><option value="">Year</option>{YEARS.map(y => <option key={y}>{y}</option>)}</select></div></div>
+                          <div><label className={LBL}>Location</label><input className={INP} value={edu.location} onChange={e => updEdu(edu.id, "location", e.target.value)} placeholder="Changa, Gujarat" /></div>
+                          <div>
+                            <label className={LBL}>Status</label>
+                            <select className={INP} value={edu.status} onChange={e => updEdu(edu.id, "status", e.target.value)}>
+                              <option value="Completed">Completed</option>
+                              <option value="Pursuing">Pursuing</option>
+                            </select>
+                          </div>
+                          <div><label className={LBL}>CGPA / Percentage</label><input className={INP} value={edu.cgpa} onChange={e => updEdu(edu.id, "cgpa", e.target.value)} placeholder="8.97 / 10" /></div>
+                          {edu.status === 'Pursuing' ? (
+                            <div><label className={LBL}>Start Year</label><select className={INP} value={edu.startYear} onChange={e => updEdu(edu.id, "startYear", e.target.value)}><option value="">Year</option>{YEARS.map(y => <option key={y}>{y}</option>)}</select></div>
+                          ) : (
+                            <div><label className={LBL}>Graduation Date</label><div className="flex gap-2"><select className={INP} value={edu.gradMonth} onChange={e => updEdu(edu.id, "gradMonth", e.target.value)}><option value="">Month</option>{MONTHS.map(m => <option key={m}>{m}</option>)}</select><select className={INP} value={edu.gradYear} onChange={e => updEdu(edu.id, "gradYear", e.target.value)}><option value="">Year</option>{YEARS.map(y => <option key={y}>{y}</option>)}</select></div></div>
+                          )}
                         </div>
                       </div>
                     ))}
-                    <button onClick={() => setEducations(p => [...p, newEdu()])} className="w-full py-3 border-2 border-dashed border-slate-800 hover:border-blue-600/50 rounded-xl text-slate-500 hover:text-blue-400 text-sm flex items-center justify-center gap-2 transition-all"><Plus className="w-4 h-4" />Add Another School</button>
+                    <button onClick={() => setEducations(p => [...p, newEdu()])} className="w-full py-4 border-2 border-dashed border-[var(--border)] hover:border-[var(--accent-primary)] bg-[var(--bg-secondary)]/50 hover:bg-[var(--accent-primary)]/5 rounded-2xl text-[var(--text-muted)] hover:text-[var(--accent-primary)] font-bold text-sm flex items-center justify-center gap-2 transition-all"><Plus className="w-5 h-5" />Add Another School</button>
                   </div>
                 )}
 
                 {step === 3 && (
-                  <div className="space-y-5">
-                    <div><h2 className="text-2xl font-bold text-white">Skills</h2><p className="text-slate-400 text-sm mt-1">Add relevant skills for the role you are targeting.</p></div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {skills.map((s, i) => (
-                        <div key={i} className="flex gap-2 items-center">
-                          <input className={`${INP} flex-1`} value={s} onChange={e => updSkl(i, e.target.value)} placeholder="e.g. React, Python..." />
-                          {skills.length > 1 && <button onClick={() => setSkills(p => p.filter((_, si) => si !== i))} className="text-slate-600 hover:text-red-400"><X className="w-4 h-4" /></button>}
-                        </div>
-                      ))}
+                  <div className="space-y-6">
+                    <div><h2 className="text-3xl font-display font-bold text-[var(--text-primary)]">Skills</h2><p className="text-[var(--text-muted)] text-sm mt-1">Add relevant skills for the role you are targeting.</p></div>
+                    <div className="glass-card border border-[var(--border)] rounded-3xl p-8 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        {skills.map((s, i) => (
+                          <div key={i} className="flex gap-2 items-center">
+                            <input className={`${INP} flex-1`} value={s} onChange={e => updSkl(i, e.target.value)} placeholder="e.g. React, Python..." />
+                            {skills.length > 1 && <button onClick={() => setSkills(p => p.filter((_, si) => si !== i))} className="text-[var(--text-muted)] hover:text-red-500 p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl hover:border-red-500/50 hover:bg-red-500/10 transition-colors"><X className="w-4 h-4" /></button>}
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => setSkills(p => [...p, ""])} className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)] font-bold text-sm flex items-center gap-1.5 px-4 py-2 rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors mt-2"><Plus className="w-4 h-4" />Add Skill</button>
                     </div>
-                    <button onClick={() => setSkills(p => [...p, ""])} className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1.5"><Plus className="w-4 h-4" />Add Skill</button>
                   </div>
                 )}
 
                 {step === 4 && (
-                  <div className="space-y-5">
-                    <div><h2 className="text-2xl font-bold text-white">Professional Summary</h2><p className="text-slate-400 text-sm mt-1">A compelling 2-4 sentence overview of your career.</p></div>
-                    <div>
-                      <textarea className={`${INP} min-h-[200px] resize-none`} value={summary} onChange={e => setSummary(e.target.value)} placeholder="Dedicated software engineer with 5+ years of experience..." />
-                      <p className="text-xs text-slate-600 mt-1.5 text-right">{summary.length} characters</p>
+                  <div className="space-y-6">
+                    <div><h2 className="text-3xl font-display font-bold text-[var(--text-primary)]">Achievements</h2><p className="text-[var(--text-muted)] text-sm mt-1">Hackathons, awards, certifications, notable projects.</p></div>
+                    <div className="glass-card border border-[var(--border)] rounded-3xl p-8 space-y-4">
+                      {achievements.map((a, i) => (
+                        <div key={i} className="flex gap-3 items-start">
+                          <span className="text-[var(--accent-primary)] text-xl leading-none pt-2">🏆</span>
+                          <input className={`${INP} flex-1`} value={a} onChange={e => setAchievements(p => p.map((x, xi) => xi === i ? e.target.value : x))} placeholder="Smart India Hackathon 2025: Built a Gamified Learning Platform..." />
+                          {achievements.length > 1 && <button onClick={() => setAchievements(p => p.filter((_, xi) => xi !== i))} className="text-[var(--text-muted)] hover:text-red-500 p-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg hover:border-red-500/50 hover:bg-red-500/10 transition-colors"><X className="w-4 h-4" /></button>}
+                        </div>
+                      ))}
+                      <button onClick={() => setAchievements(p => [...p, ""])} className="text-[var(--accent-primary)] font-bold text-sm flex items-center gap-1.5 px-4 py-2 rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"><Plus className="w-4 h-4" />Add Achievement</button>
+                    </div>
+                  </div>
+                )}
+
+                {step === 5 && (
+                  <div className="space-y-6">
+                    <div><h2 className="text-3xl font-display font-bold text-[var(--text-primary)]">Bio & Summary</h2><p className="text-[var(--text-muted)] text-sm mt-1">A short bio and a professional career summary.</p></div>
+                    <div className="glass-card border border-[var(--border)] rounded-3xl p-8 space-y-6">
+                      <div>
+                        <label className={LBL}>Profile Bio <span className="normal-case font-normal">(shown as PROFILE section)</span></label>
+                        <textarea className={`${INP} min-h-[120px] resize-none leading-relaxed`} value={bio} onChange={e => setBio(e.target.value)} placeholder="Passionate software engineer focused on building scalable systems..." />
+                        <p className="text-xs font-semibold text-[var(--text-muted)] mt-2 text-right">{bio.length} chars</p>
+                      </div>
+                      <div>
+                        <label className={LBL}>Professional Summary <span className="normal-case font-normal">(shown as SUMMARY section)</span></label>
+                        <textarea className={`${INP} min-h-[160px] resize-none leading-relaxed`} value={summary} onChange={e => setSummary(e.target.value)} placeholder="Dedicated software engineer with 5+ years of experience in building cloud-native applications..." />
+                        <p className="text-xs font-semibold text-[var(--text-muted)] mt-2 text-right">{summary.length} chars</p>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -284,15 +295,15 @@ export default function ResumeBuilder() {
             </AnimatePresence>
 
             {/* Bottom Nav */}
-            <div className="flex items-center justify-between mt-10 pt-6 border-t border-slate-800">
-              <button onClick={() => go(-1)} disabled={step === 0} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm font-medium">
+            <div className="flex items-center justify-between mt-12 pt-8 border-t border-[var(--border)] mb-10 relative z-10">
+              <button onClick={() => go(-1)} disabled={step === 0} className="flex items-center gap-2 px-6 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] font-bold hover:bg-[var(--bg-card)] disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm">
                 <ChevronLeft className="w-4 h-4" />Back
               </button>
               {step < STEPS.length - 1
-                ? <button onClick={() => go(1)} className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-colors">
-                  Next <ChevronRight className="w-4 h-4" />
+                ? <button onClick={() => go(1)} className="flex items-center gap-2 px-8 py-3 bg-[var(--accent-primary)] hover:scale-105 hover:shadow-[var(--glow)] text-white text-sm font-bold rounded-xl transition-all">
+                  Next Step <ChevronRight className="w-4 h-4" />
                 </button>
-                : <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60">
+                : <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-8 py-3 bg-[#10b981] hover:scale-105 shadow-[0_0_20px_rgba(16,185,129,0.3)] text-white text-sm font-bold rounded-xl transition-all disabled:opacity-60 disabled:hover:scale-100">
                   <Save className="w-4 h-4" /> {saving ? "Saving..." : isEditing ? "Update Resume" : "Save Resume"}
                 </button>
               }
@@ -302,8 +313,8 @@ export default function ResumeBuilder() {
       </div>
 
       {/* ── RIGHT: Vertical Step Tracker ── */}
-      <div className="hidden lg:flex w-64 shrink-0 bg-slate-900 border-l border-slate-800 flex-col py-10 px-6">
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-8">Progress</p>
+      <div className="hidden lg:flex w-[320px] shrink-0 bg-[var(--bg-card)] border-l border-[var(--border)] flex-col py-10 px-8 relative z-20 shadow-xl">
+        <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)] mb-10">Builder Progress</p>
         <div className="relative flex flex-col gap-0">
           {STEPS.map((s, i) => {
             const Icon = s.icon;
@@ -311,25 +322,25 @@ export default function ResumeBuilder() {
             const cur = i === step;
             const last = i === STEPS.length - 1;
             return (
-              <div key={s.id} className="relative flex gap-4 cursor-pointer group" onClick={() => { setDir(i > step ? 1 : -1); setStep(i); }}>
+              <div key={s.id} className="relative flex gap-5 cursor-pointer group" onClick={() => { setDir(i > step ? 1 : -1); setStep(i); }}>
                 {/* Vertical connector line */}
                 {!last && (
-                  <div className="absolute left-5 top-10 w-0.5 h-full z-0" style={{ background: done ? "#2563eb" : "#1e293b" }} />
+                  <div className="absolute left-[23px] top-12 w-0.5 h-full z-0 transition-colors duration-500" style={{ background: done ? "var(--accent-primary)" : "var(--border)" }} />
                 )}
                 {/* Icon circle */}
-                <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center border-2 shrink-0 transition-all duration-300 mt-0 ${done ? "bg-blue-600 border-blue-600 shadow-[0_0_12px_rgba(59,130,246,0.5)]"
-                    : cur ? "bg-blue-600/20 border-blue-500 shadow-[0_0_16px_rgba(59,130,246,0.4)]"
-                      : "bg-slate-900 border-slate-700 group-hover:border-slate-500"
+                <div className={`relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center border-2 shrink-0 transition-all duration-300 mt-0 ${done ? "bg-[var(--accent-primary)] border-[var(--accent-primary)] shadow-[var(--glow)]"
+                    : cur ? "bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]"
+                      : "bg-[var(--bg-secondary)] border-[var(--border)] group-hover:border-[var(--text-muted)]"
                   }`}>
                   {done
-                    ? <CheckCircle className="w-4 h-4 text-white" />
-                    : <Icon className={`w-4 h-4 ${cur ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300"}`} />
+                    ? <CheckCircle className="w-5 h-5 text-white" />
+                    : <Icon className={`w-5 h-5 ${cur ? "text-[var(--accent-primary)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`} />
                   }
                 </div>
                 {/* Label */}
-                <div className="pb-8">
-                  <p className={`text-sm font-semibold transition-colors ${cur ? "text-blue-400" : done ? "text-white" : "text-slate-500 group-hover:text-slate-300"}`}>{s.label}</p>
-                  <p className={`text-xs mt-0.5 transition-colors ${cur ? "text-blue-400/70" : done ? "text-slate-400" : "text-slate-600"}`}>{s.desc}</p>
+                <div className="pb-10 pt-1">
+                  <p className={`text-sm font-bold transition-colors ${cur ? "text-[var(--accent-primary)]" : done ? "text-[var(--text-primary)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`}>{s.label}</p>
+                  <p className={`text-xs mt-1 font-medium transition-colors ${cur ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"}`}>{s.desc}</p>
                 </div>
               </div>
             );
@@ -337,13 +348,13 @@ export default function ResumeBuilder() {
         </div>
 
         {/* Completion indicator */}
-        <div className="mt-auto">
-          <div className="mb-2 flex justify-between text-xs text-slate-500">
-            <span>Completion</span>
-            <span>{Math.round((step / (STEPS.length - 1)) * 100)}%</span>
+        <div className="mt-auto pt-6 border-t border-[var(--border)]">
+          <div className="mb-3 flex justify-between text-xs font-bold text-[var(--text-muted)]">
+            <span className="uppercase tracking-wider">Completion Profile</span>
+            <span className={step === STEPS.length - 1 ? "text-[#10b981]" : "text-[var(--text-primary)]"}>{Math.round((step / (STEPS.length - 1)) * 100)}%</span>
           </div>
-          <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-            <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(step / (STEPS.length - 1)) * 100}%` }} />
+          <div className="h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border)]">
+            <div className={`h-full rounded-full transition-all duration-700 ease-out ${step === STEPS.length - 1 ? "bg-[#10b981] shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-[var(--accent-primary)] shadow-[var(--glow)]"}`} style={{ width: `${(step / (STEPS.length - 1)) * 100}%` }} />
           </div>
         </div>
       </div>
@@ -353,12 +364,12 @@ export default function ResumeBuilder() {
         {preview && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setPreview(false)} />
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed right-0 top-0 bottom-0 w-[480px] z-50 bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
-                <span className="text-sm font-bold text-white">Resume Preview</span>
-                <button onClick={() => setPreview(false)} className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"><X className="w-4 h-4" /></button>
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed right-0 top-0 bottom-0 w-[550px] z-50 bg-[var(--bg-secondary)] border-l border-[var(--border)] flex flex-col shadow-2xl">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border)] bg-[var(--bg-card)]">
+                <span className="text-base font-display font-bold text-[var(--text-primary)]">Live Document Preview</span>
+                <button onClick={() => setPreview(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"><X className="w-5 h-5" /></button>
               </div>
-              <div className="flex-1 overflow-y-auto p-5">{previewContent}</div>
+              <div className="flex-1 overflow-y-auto p-8 bg-[var(--bg-secondary)]">{previewContent}</div>
             </motion.div>
           </>
         )}

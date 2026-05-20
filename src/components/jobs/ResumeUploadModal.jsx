@@ -75,58 +75,60 @@ export default function ResumeUploadModal({ job, onClose, onSuccess }) {
         onClick={onClose}
       >
         <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-[#0d1a2d] border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl"
+          className="glass-card border border-[var(--border)] rounded-2xl w-full max-w-md shadow-2xl"
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border)]">
             <div>
-              <h3 className="text-white font-bold">Apply for Position</h3>
-              <p className="text-slate-400 text-xs mt-0.5">{job.role} · {job.companyName}</p>
+              <h3 className="text-[var(--text-primary)] font-bold font-display text-lg">Apply for Position</h3>
+              <p className="text-[var(--text-muted)] text-sm font-semibold mt-0.5">{job.role} · {job.companyName}</p>
             </div>
-            <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
+            <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {done ? (
             <div className="flex flex-col items-center justify-center py-12 gap-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-emerald-400" />
+              <div className="w-16 h-16 rounded-full bg-[#10b981]/15 flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-[#10b981]" />
               </div>
-              <h3 className="text-white font-bold text-lg">Application Submitted!</h3>
-              <p className="text-slate-400 text-sm text-center px-8">You can track your application status in My Applications.</p>
-              <button onClick={onClose} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-colors">Done</button>
+              <h3 className="text-[var(--text-primary)] font-bold text-lg">Application Submitted!</h3>
+              <p className="text-[var(--text-muted)] text-sm text-center px-8 font-medium">You can track your application status in My Applications.</p>
+              <button onClick={onClose} className="mt-2 px-8 py-3 bg-[var(--bg-secondary)] hover:bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-primary)] text-sm font-bold rounded-xl transition-colors">Done</button>
             </div>
           ) : fetching ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <Loader className="w-8 h-8 text-blue-500 animate-spin" />
-              <p className="text-slate-400 text-sm">Fetching your resumes...</p>
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader className="w-8 h-8 text-[var(--accent-primary)] animate-spin" />
+              <p className="text-[var(--text-muted)] text-sm font-semibold">Fetching your resumes...</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {resumes.length === 0 ? (
-                <div className="text-center py-6 px-4 bg-slate-900/50 rounded-xl border border-slate-800">
-                  <FileText className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-                  <p className="text-slate-300 text-sm font-medium">No resumes found</p>
-                  <p className="text-slate-500 text-xs mt-1 mb-4">You need to create a resume in the builder first.</p>
-                  <button type="button" onClick={() => window.location.href='/dashboard/resumes/new'} className="text-blue-400 hover:text-blue-300 text-xs font-semibold underline">Go to Resume Builder</button>
+                <div className="text-center py-8 px-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)]">
+                  <div className="w-16 h-16 rounded-full bg-[var(--bg-primary)] flex items-center justify-center mx-auto mb-4 shadow-sm border border-[var(--border)]">
+                    <FileText className="w-8 h-8 text-[var(--text-muted)]" />
+                  </div>
+                  <p className="text-[var(--text-primary)] text-base font-bold">No resumes found</p>
+                  <p className="text-[var(--text-muted)] text-sm mt-1 mb-6">You need to create a resume in the builder first.</p>
+                  <button type="button" onClick={() => window.location.href='/dashboard/resumes/new'} className="px-6 py-2.5 bg-[var(--accent-primary)] text-white text-sm font-bold rounded-full hover:scale-105 shadow-[var(--glow)] transition-all">Go to Resume Builder</button>
                 </div>
               ) : (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Select Resume *</label>
+                  <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wide mb-3">Select Resume <span className="text-red-500">*</span></label>
                   <div className="space-y-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                     {resumes.map(r => (
-                      <label key={r.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${selectedResumeId === r.id ? 'bg-blue-600/10 border-blue-500' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}`}>
+                      <label key={r.id} className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${selectedResumeId === r.id ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)] shadow-sm' : 'bg-[var(--bg-secondary)] border-[var(--border)] hover:border-[var(--text-muted)]'}`}>
                         <input type="radio" name="resume" value={r.id} checked={selectedResumeId === r.id} onChange={() => setSelectedResumeId(r.id)} className="hidden" />
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedResumeId === r.id ? 'border-blue-500' : 'border-slate-700'}`}>
-                          {selectedResumeId === r.id && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedResumeId === r.id ? 'border-[var(--accent-primary)]' : 'border-[var(--border)]'}`}>
+                          {selectedResumeId === r.id && <div className="w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)]" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white text-sm font-medium truncate">{r.title}</p>
-                          <p className="text-slate-500 text-[10px]">Saved on {r.savedAt?.toDate ? r.savedAt.toDate().toLocaleDateString() : 'recent'}</p>
+                          <p className="text-[var(--text-primary)] text-sm font-bold truncate">{r.title}</p>
+                          <p className="text-[var(--text-muted)] text-xs font-medium mt-0.5">Saved {r.savedAt?.toDate ? r.savedAt.toDate().toLocaleDateString() : 'recent'}</p>
                         </div>
-                        <FileText className="w-4 h-4 text-slate-600" />
+                        <FileText className={`w-5 h-5 ${selectedResumeId === r.id ? 'text-[var(--accent-primary)]' : 'text-[var(--text-muted)]'}`} />
                       </label>
                     ))}
                   </div>
@@ -135,20 +137,20 @@ export default function ResumeUploadModal({ job, onClose, onSuccess }) {
 
               {/* Cover message */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Cover Message (optional)</label>
+                <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wide mb-3">Cover Message <span className="text-[var(--text-muted)] lowercase tracking-normal">(optional)</span></label>
                 <textarea
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   rows={3}
                   placeholder="Tell us why you're a great fit..."
-                  className="w-full bg-slate-900 border border-slate-700 hover:border-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl px-4 py-3 text-sm text-white outline-none placeholder-slate-500 transition-all resize-none"
+                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)] rounded-xl px-4 py-3 text-sm text-[var(--text-primary)] font-medium outline-none placeholder-[var(--text-muted)] transition-all resize-none shadow-sm"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading || resumes.length === 0}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-semibold rounded-xl text-sm transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                className="w-full py-3.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/90 disabled:opacity-60 disabled:hover:scale-100 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-[var(--glow)] hover:scale-[1.02]"
               >
                 {loading ? <><Loader className="w-4 h-4 animate-spin"/> Submitting...</> : "Submit Application"}
               </button>
@@ -159,4 +161,3 @@ export default function ResumeUploadModal({ job, onClose, onSuccess }) {
     </AnimatePresence>
   );
 }
-

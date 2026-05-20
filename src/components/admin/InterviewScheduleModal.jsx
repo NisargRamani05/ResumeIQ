@@ -45,18 +45,18 @@ export default function InterviewScheduleModal({ onClose, onSubmit }) {
           initial={{ scale: 0.95, opacity: 0, y: 10 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 10 }}
-          className="bg-[#0d1a2d] border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
+          className="glass-card border border-[var(--border)] rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50">
             <div>
-              <h3 className="text-white font-bold text-lg">Schedule Interview</h3>
-              <p className="text-slate-400 text-xs mt-0.5">Pick a date and time</p>
+              <h3 className="text-[var(--text-primary)] font-display font-bold text-lg">Schedule Interview</h3>
+              <p className="text-[var(--text-muted)] text-sm mt-0.5 font-medium">Pick a date and time</p>
             </div>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+              className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -65,8 +65,8 @@ export default function InterviewScheduleModal({ onClose, onSubmit }) {
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {/* Date Input */}
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" /> Date
+              <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" /> Date
               </label>
               <div className="relative">
                 <input
@@ -74,15 +74,15 @@ export default function InterviewScheduleModal({ onClose, onSubmit }) {
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 hover:border-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl px-4 py-3 text-sm text-white outline-none transition-all [color-scheme:dark]"
+                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--text-muted)] focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)] rounded-xl px-4 py-3 text-sm text-[var(--text-primary)] font-medium outline-none transition-all [color-scheme:dark] shadow-sm"
                 />
               </div>
             </div>
 
             {/* Time Input */}
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" /> Time
+              <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <Clock className="w-4 h-4" /> Time
               </label>
               <div className="relative">
                 <input
@@ -90,7 +90,7 @@ export default function InterviewScheduleModal({ onClose, onSubmit }) {
                   required
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 hover:border-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-xl px-4 py-3 text-sm text-white outline-none transition-all [color-scheme:dark]"
+                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--text-muted)] focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)] rounded-xl px-4 py-3 text-sm text-[var(--text-primary)] font-medium outline-none transition-all [color-scheme:dark] shadow-sm"
                 />
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function InterviewScheduleModal({ onClose, onSubmit }) {
             <button
               type="submit"
               disabled={loading || !date || !time}
-              className="w-full mt-2 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
+              className="w-full mt-4 py-3.5 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/90 disabled:opacity-60 disabled:hover:scale-100 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-[var(--glow)] hover:scale-[1.02]"
             >
               {loading ? (
                 <Loader className="w-4 h-4 animate-spin" />

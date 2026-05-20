@@ -44,18 +44,20 @@ export default function JobTracker() {
 
   if (loading) return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">My Applications</h1>
+      <h1 className="text-3xl font-display font-bold text-[var(--text-primary)]">My Applications</h1>
       <div className="space-y-4">{Array.from({length:3}).map((_,i)=>(
-        <div key={i} className="bg-[#0d1a2d] border border-slate-800 rounded-2xl p-5 animate-pulse h-24"/>
+        <div key={i} className="glass-card rounded-2xl p-6 animate-pulse h-28"/>
       ))}</div>
     </div>
   );
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">My Applications</h1>
-        <p className="text-slate-400 text-sm mt-0.5">{applications.length} application{applications.length!==1?"s":""} submitted</p>
+    <div className="space-y-8 relative">
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[var(--accent-primary)]/10 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="relative z-10">
+        <h1 className="text-3xl font-display font-bold text-[var(--text-primary)] tracking-tight">My Applications</h1>
+        <p className="text-[var(--text-muted)] text-sm mt-1">{applications.length} application{applications.length!==1?"s":""} submitted</p>
       </div>
 
       {applications.length === 0 ? (
@@ -63,64 +65,68 @@ export default function JobTracker() {
           icon={Briefcase}
           title="No applications yet"
           description="Browse available jobs and apply to get started."
-          action={<button onClick={()=>navigate("/dashboard/jobs")} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-colors">Browse Jobs</button>}
+          action={<button onClick={()=>navigate("/dashboard/jobs")} className="px-8 py-3 bg-[var(--accent-primary)] hover:scale-105 shadow-[var(--glow)] text-white text-sm font-bold rounded-full transition-all mt-4">Browse Jobs</button>}
         />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-5 relative z-10">
           {applications.map(app => {
             const stepIdx = getStepIndex(app.status);
             const isRejected = app.status === "Rejected";
             const isExpanded = expanded === app.id;
             return (
-              <div key={app.id} className="bg-[#0d1a2d] border border-slate-800 hover:border-slate-700 rounded-2xl overflow-hidden transition-colors">
+              <div key={app.id} className="glass-card hover:border-[var(--accent-primary)]/40 rounded-2xl overflow-hidden transition-all hover:shadow-lg">
                 {/* Header */}
-                <div className="flex items-center justify-between p-5 cursor-pointer" onClick={()=>setExpanded(isExpanded?null:app.id)}>
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 cursor-pointer group" onClick={()=>setExpanded(isExpanded?null:app.id)}>
+                  <div className="flex items-center gap-5">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-white font-display font-black text-lg shrink-0 shadow-[var(--glow)] group-hover:scale-110 transition-transform">
                       {(app.companyName||"?")[0]}
                     </div>
                     <div>
-                      <p className="text-white font-semibold">{app.jobTitle||"Position"}</p>
-                      <p className="text-slate-400 text-sm">{app.companyName||"Company"} · Applied {fmt(app.appliedAt)}</p>
+                      <p className="text-[var(--text-primary)] font-bold text-lg group-hover:text-[var(--accent-primary)] transition-colors">{app.jobTitle||"Position"}</p>
+                      <p className="text-[var(--text-muted)] text-sm font-medium">{app.companyName||"Company"} · Applied {fmt(app.appliedAt)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4 mt-4 sm:mt-0 self-end sm:self-auto">
                     <StatusBadge status={app.status}/>
-                    <span className="text-slate-600 text-xs">{isExpanded?"▲":"▼"}</span>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isExpanded ? 'bg-[var(--accent-primary)] text-white' : 'bg-[var(--bg-secondary)] text-[var(--text-muted)]'}`}>
+                      <span className="text-xs font-bold">{isExpanded?"▲":"▼"}</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Expanded: progress + resume */}
                 {isExpanded && (
-                  <div className="px-5 pb-5 border-t border-slate-800 pt-4 space-y-4">
+                  <div className="px-6 pb-6 border-t border-[var(--border)] pt-5 space-y-6 bg-[var(--bg-secondary)]/30">
                     {isRejected ? (
-                      <div className="flex items-center gap-3 p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
-                        <XCircle className="w-5 h-5 text-red-400 shrink-0"/>
-                        <p className="text-red-300 text-sm">Your application was not selected for this position. Keep applying!</p>
+                      <div className="flex items-center gap-4 p-5 bg-red-500/10 border border-red-500/20 rounded-xl">
+                        <XCircle className="w-6 h-6 text-red-500 shrink-0"/>
+                        <p className="text-red-500 font-semibold text-sm">Your application was not selected for this position. Keep applying!</p>
                       </div>
                     ) : (
                       <div>
-                        <p className="text-slate-400 text-xs font-semibold uppercase tracking-wide mb-4">Application Progress</p>
+                        <p className="text-[var(--text-muted)] text-xs font-bold uppercase tracking-wide mb-5">Application Progress</p>
                         <div className="relative">
-                          <div className="absolute left-4 top-4 bottom-4 w-0.5 bg-slate-800"/>
-                          <div className="absolute left-4 top-4 w-0.5 bg-blue-600 transition-all duration-500" style={{height:`${(stepIdx/(STEPS.length-1))*100}%`}}/>
-                          <div className="space-y-4 relative">
+                          <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-[var(--border)]"/>
+                          <div className="absolute left-[19px] top-4 w-0.5 bg-[var(--accent-primary)] transition-all duration-500 shadow-[var(--glow)]" style={{height:`${(stepIdx/(STEPS.length-1))*100}%`}}/>
+                          <div className="space-y-6 relative">
                             {STEPS.map((s,i)=>{
                               const done = i < stepIdx || (s==="Selected" && app.status==="Selected");
                               const cur = STEPS[stepIdx]===s;
                               const Icon = STEP_ICONS[s]||Clock;
                               return (
-                                <div key={s} className="flex items-center gap-4">
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 relative z-10 transition-all ${done?"bg-blue-600 border-blue-600":cur?"bg-blue-600/20 border-blue-500":"bg-slate-900 border-slate-700"}`}>
-                                    <Icon className={`w-3.5 h-3.5 ${done||cur?"text-white":"text-slate-600"}`}/>
+                                <div key={s} className="flex items-center gap-5">
+                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 relative z-10 transition-all ${done?"bg-[var(--accent-primary)] border-[var(--accent-primary)] shadow-[var(--glow)]":cur?"bg-[var(--accent-primary)]/20 border-[var(--accent-primary)]":"bg-[var(--bg-secondary)] border-[var(--border)]"}`}>
+                                    <Icon className={`w-4 h-4 ${done||cur?"text-white":"text-[var(--text-muted)]"}`}/>
                                   </div>
-                                  <span className={`text-sm font-medium ${done||cur?"text-white":"text-slate-500"}`}>{s}</span>
-                                  {cur && <span className="text-xs text-blue-400 font-medium">← Current</span>}
-                                  {cur && s === "Interview Scheduled" && app.interviewDate && (
-                                    <span className="text-xs text-blue-300 font-medium bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 ml-2">
-                                      {app.interviewDate}
-                                    </span>
-                                  )}
+                                  <div className="flex items-center gap-3">
+                                    <span className={`text-sm font-bold ${done||cur?"text-[var(--text-primary)]":"text-[var(--text-muted)]"}`}>{s}</span>
+                                    {cur && <span className="text-xs text-[var(--accent-primary)] font-bold bg-[var(--accent-primary)]/10 px-2 py-0.5 rounded border border-[var(--accent-primary)]/20 shadow-[0_0_10px_rgba(56,189,248,0.2)]">Current Stage</span>}
+                                    {cur && s === "Interview Scheduled" && app.interviewDate && (
+                                      <span className="text-xs text-white font-bold bg-[#10b981] px-3 py-1 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)] border border-[#10b981]/20 ml-2">
+                                        {app.interviewDate}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               );
                             })}
@@ -129,17 +135,19 @@ export default function JobTracker() {
                       </div>
                     )}
 
-                    {app.resumeUrl && (
-                      <a href={app.resumeUrl} target="_blank" rel="noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-medium rounded-lg transition-colors">
-                        <FileText className="w-3.5 h-3.5"/> View Submitted Resume <ExternalLink className="w-3 h-3"/>
-                      </a>
-                    )}
+                    <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-[var(--border)]">
+                      {app.resumeUrl && (
+                        <a href={app.resumeUrl} target="_blank" rel="noreferrer"
+                          className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-[var(--bg-secondary)] hover:bg-[var(--accent-primary)] border border-[var(--border)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] hover:text-white text-sm font-bold rounded-xl transition-all shadow-sm">
+                          <FileText className="w-4 h-4"/> View Submitted Resume <ExternalLink className="w-3.5 h-3.5"/>
+                        </a>
+                      )}
+                    </div>
 
                     {app.message && (
-                      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                        <p className="text-slate-500 text-xs uppercase tracking-wide mb-2 font-semibold">Your Cover Message</p>
-                        <p className="text-slate-300 text-sm">{app.message}</p>
+                      <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-5 shadow-inner">
+                        <p className="text-[var(--text-muted)] text-xs uppercase tracking-wide mb-2 font-bold">Your Cover Message</p>
+                        <p className="text-[var(--text-primary)] text-sm font-medium italic">"{app.message}"</p>
                       </div>
                     )}
                   </div>

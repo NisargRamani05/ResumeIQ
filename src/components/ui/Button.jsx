@@ -3,9 +3,9 @@ import { cn } from '../../utils/cn';
 
 const Button = React.forwardRef(({ className, variant = 'primary', size = 'default', children, ...props }, ref) => {
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-900/20',
-    secondary: 'bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700',
-    ghost: 'bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white',
+    primary: 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90 shadow-[var(--glow)]',
+    secondary: 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-card)] border border-[var(--border)]',
+    ghost: 'bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]',
     danger: 'bg-red-500/10 text-red-500 hover:bg-red-500/20',
   };
 
@@ -20,7 +20,7 @@ const Button = React.forwardRef(({ className, variant = 'primary', size = 'defau
     <button
       ref={ref}
       className={cn(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex items-center justify-center rounded-lg font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] disabled:pointer-events-none disabled:opacity-50 hover:scale-105 active:scale-95',
         variants[variant],
         sizes[size],
         className

@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 
@@ -43,7 +44,7 @@ const PageWrapper = ({ children }) => {
 
 const AnimatedRoutes = () => {
   const location = useLocation();
-  
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
@@ -72,7 +73,6 @@ const AnimatedRoutes = () => {
           <Route path="jobs/new" element={<PageWrapper><AdminAddJob /></PageWrapper>} />
           <Route path="jobs/:id/edit" element={<PageWrapper><AdminAddJob /></PageWrapper>} />
           <Route path="applications" element={<PageWrapper><AdminApplications /></PageWrapper>} />
-          <Route path="users" element={<PageWrapper><div className="text-white">User Management (Coming Soon)</div></PageWrapper>} />
           <Route path="settings" element={<PageWrapper><ProfileSettings /></PageWrapper>} />
         </Route>
 
@@ -84,23 +84,24 @@ const AnimatedRoutes = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Toaster 
-          position="top-right" 
-          toastOptions={{ 
-            style: { 
-              background: "var(--bg-card)", 
-              color: "var(--text-primary)", 
-              border: "1px solid var(--border)",
-              borderRadius: "12px",
-              boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)"
-            } 
-          }}
-        />
-        <AnimatedRoutes />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              className: "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border)]",
+              style: {
+                borderRadius: "12px",
+                border: "1px solid var(--border)",
+                boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)"
+              }
+            }}
+          />
+          <AnimatedRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

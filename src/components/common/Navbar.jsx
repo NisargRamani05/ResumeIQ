@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, ArrowRight, LogOut, ChevronRight } from 'lucide-react';
+import { Menu, X, ArrowRight, LogOut, ChevronRight, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { logoutUser } from '../../firebase/auth';
 import toast from 'react-hot-toast';
 
@@ -12,8 +13,8 @@ function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { scrollY } = useScroll();
   const { currentUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious();
@@ -52,13 +53,13 @@ function Navbar() {
         animate={hidden ? "hidden" : "visible"}
         transition={{ duration: 0.35, ease: "easeInOut" }}
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-          scrolled ? 'glass-nav py-4' : 'bg-transparent py-6'
+          scrolled ? 'glass-nav py-4 border-b border-[var(--border)]' : 'bg-transparent py-6'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-1 group">
-            <span className="font-display text-2xl font-bold text-white tracking-tight">
-              ResumeIQ<span className="text-[var(--accent-primary)] group-hover:text-[var(--accent-secondary)] transition-colors">.</span>
+            <span className="font-display text-2xl font-bold text-[var(--text-primary)] tracking-tight">
+              Resume<span className="text-[var(--accent-primary)]">IQ</span>
             </span>
           </Link>
 
@@ -73,7 +74,7 @@ function Navbar() {
                     navigate(link.href);
                   }
                 }}
-                className="text-[var(--text-muted)] hover:text-white transition-colors relative group"
+                className="text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors relative group font-bold"
               >
                 {link.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent-primary)] transition-all duration-300 group-hover:w-full" />
@@ -82,29 +83,36 @@ function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-5">
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 rounded-full text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
             {currentUser ? (
               <>
                 <Link 
                   to={currentUser.email === 'admin@gmail.com' ? '/admin' : '/dashboard'} 
-                  className="text-sm font-medium text-[var(--text-muted)] hover:text-white transition-colors"
+                  className="text-sm font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   Dashboard
                 </Link>
                 <button 
                   onClick={handleLogout} 
-                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-white/5 border border-white/10 rounded-full overflow-hidden transition-all hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-[var(--text-primary)] bg-[var(--bg-secondary)] border border-[var(--border)] rounded-full overflow-hidden transition-all hover:border-[var(--accent-primary)] hover:bg-[var(--bg-card)] shadow-sm"
                 >
                   <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Sign Out
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className="text-sm font-medium text-[var(--text-muted)] hover:text-white transition-colors">
+                <Link to="/login" className="text-sm font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                   Sign In
                 </Link>
                 <Link 
                   to="/register" 
-                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-medium text-black bg-[var(--accent-primary)] rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-[var(--glow)]"
+                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[var(--accent-primary)] rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-[var(--glow)]"
                 >
                   Get Started <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -112,12 +120,20 @@ function Navbar() {
             )}
           </div>
 
-          <button
-            className="md:hidden text-[var(--text-muted)] hover:text-white transition-colors z-50 relative"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          <div className="flex md:hidden items-center gap-4 z-50 relative">
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 text-[var(--text-muted)] hover:text-[var(--accent-primary)] transition-colors"
+            >
+              {theme === 'dark' ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+            </button>
+            <button
+              className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
       </motion.nav>
 
@@ -146,7 +162,7 @@ function Navbar() {
                       navigate(link.href);
                     }
                   }}
-                  className="font-display text-4xl font-bold text-white flex items-center justify-between group"
+                  className="font-display text-4xl font-bold text-[var(--text-primary)] flex items-center justify-between group"
                 >
                   {link.label}
                   <ChevronRight className="w-8 h-8 opacity-0 group-hover:opacity-100 group-hover:text-[var(--accent-primary)] transition-all -translate-x-4 group-hover:translate-x-0" />
@@ -157,7 +173,7 @@ function Navbar() {
                 initial={{ opacity: 0, scaleX: 0 }}
                 animate={{ opacity: 1, scaleX: 1 }}
                 transition={{ delay: 0.4 }}
-                className="border-white/10 my-4" 
+                className="border-[var(--border)] my-4" 
               />
               
               {currentUser ? (
@@ -170,11 +186,11 @@ function Navbar() {
                   <Link 
                     to={currentUser.email === 'admin@gmail.com' ? '/admin' : '/dashboard'} 
                     onClick={() => setMobileMenuOpen(false)} 
-                    className="font-display text-2xl text-[var(--text-muted)] hover:text-white"
+                    className="font-display text-2xl font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                   >
                     Dashboard
                   </Link>
-                  <button onClick={handleLogout} className="font-display text-2xl text-red-400 text-left hover:text-red-300">
+                  <button onClick={handleLogout} className="font-display text-2xl font-bold text-red-500 text-left hover:text-red-400">
                     Sign Out
                   </button>
                 </motion.div>
@@ -185,10 +201,10 @@ function Navbar() {
                   transition={{ delay: 0.5 }}
                   className="flex flex-col gap-6"
                 >
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="font-display text-2xl text-[var(--text-muted)] hover:text-white">
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="font-display text-2xl font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)]">
                     Sign In
                   </Link>
-                  <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="font-display text-2xl text-[var(--accent-primary)]">
+                  <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="font-display text-2xl font-bold text-[var(--accent-primary)]">
                     Get Started Free
                   </Link>
                 </motion.div>

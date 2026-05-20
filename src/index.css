@@ -2,17 +2,36 @@
 
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'DM Sans', sans-serif;
+  --font-display: 'Syne', sans-serif;
+}
+
 @layer base {
   :root {
-    --bg-primary: #0A0A0A;
-    --bg-secondary: #111111;
-    --bg-card: #141414;
-    --accent-primary: #00F5FF;
-    --accent-secondary: #AAFF00;
-    --text-primary: #F0F0F0;
-    --text-muted: #666666;
+    --bg-primary: #F8FAFC;
+    --bg-secondary: #E2E8F0;
+    --bg-card: #FFFFFF;
+    --accent-primary: #3B82F6;
+    --accent-secondary: #8B5CF6;
+    --text-primary: #0F172A;
+    --text-muted: #64748B;
+    --border: rgba(0, 0, 0, 0.1);
+    --glow: 0 0 40px rgba(59, 130, 246, 0.15);
+    --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    --bg-primary: #0B1120;
+    --bg-secondary: #111827;
+    --bg-card: #141C2F;
+    --accent-primary: #38BDF8;
+    --accent-secondary: #818CF8;
+    --text-primary: #F8FAFC;
+    --text-muted: #94A3B8;
     --border: rgba(255, 255, 255, 0.07);
-    --glow: 0 0 40px rgba(0, 245, 255, 0.15);
+    --glow: 0 0 40px rgba(56, 189, 248, 0.15);
+    --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.2);
   }
 
   body {
@@ -22,6 +41,7 @@
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     font-family: 'DM Sans', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6, .font-display {
@@ -38,7 +58,7 @@
 
 @layer utilities {
   .text-glow {
-    text-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    text-shadow: 0 0 20px var(--accent-primary);
   }
   
   .border-glow {
@@ -46,7 +66,7 @@
   }
 
   .glass-nav {
-    background: rgba(10, 10, 10, 0.6);
+    background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
@@ -55,6 +75,14 @@
   .glass-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+  }
+
+  .gradient-text {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
   }
 
   .hide-scrollbar::-webkit-scrollbar {
@@ -68,9 +96,7 @@
 
 /* Animations */
 @keyframes dash {
-  to {
-    stroke-dashoffset: 0;
-  }
+  to { stroke-dashoffset: 0; }
 }
 
 .animate-dash {
@@ -86,24 +112,25 @@
   animation: float 4s ease-in-out infinite;
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
 /* Particle Grid Background */
 .bg-grid-pattern {
   background-image: 
-    radial-gradient(circle at center, rgba(255,255,255,0.05) 1px, transparent 1px);
+    radial-gradient(circle at center, var(--text-muted) 1px, transparent 1px);
   background-size: 32px 32px;
-}
-
-/* Upload dashed border rotation */
-@keyframes spin-slow {
-  to { transform: rotate(360deg); }
-}
-
-.spin-border {
-  animation: spin-slow 8s linear infinite;
+  opacity: 0.1;
 }
 
 /* Custom Selection */
 ::selection {
   background: var(--accent-primary);
-  color: #000;
+  color: #fff;
 }

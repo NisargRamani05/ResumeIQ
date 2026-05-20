@@ -1,6 +1,6 @@
-﻿import React from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FileText, Briefcase, Settings, Users, LogOut, Search, ClipboardList, Plus } from "lucide-react";
+import { LayoutDashboard, FileText, Briefcase, Settings, LogOut, Search, ClipboardList, Plus } from "lucide-react";
 import { cn } from "../../utils/cn";
 
 function Sidebar({ role = "user", isOpen = true }) {
@@ -19,7 +19,6 @@ function Sidebar({ role = "user", isOpen = true }) {
     { name:"Manage Jobs",    path:"/admin/jobs",             icon:Briefcase },
     { name:"Post New Job",   path:"/admin/jobs/new",         icon:Plus },
     { name:"Applications",   path:"/admin/applications",     icon:ClipboardList },
-    { name:"Users",          path:"/admin/users",            icon:Users },
     { name:"Settings",       path:"/admin/settings",         icon:Settings },
   ];
 
@@ -32,7 +31,7 @@ function Sidebar({ role = "user", isOpen = true }) {
 
   return (
     <aside className={cn(
-      "shrink-0 w-64 border-r border-slate-800 bg-slate-900 flex flex-col overflow-y-auto transition-all duration-300",
+      "shrink-0 w-64 border-r border-[var(--border)] bg-[var(--bg-card)] flex flex-col overflow-y-auto transition-all duration-300",
       isOpen ? "" : "hidden"
     )}>
       <div className="flex-1 py-4 px-3">
@@ -45,25 +44,25 @@ function Sidebar({ role = "user", isOpen = true }) {
                 <Link to={route.path} className={cn(
                   "flex items-center p-3 rounded-xl font-medium transition-all group",
                   active
-                    ? "bg-blue-600/15 text-blue-400 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.2)]"
-                    : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
+                    ? "bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] shadow-[inset_0_0_0_1px_var(--accent-primary)]"
+                    : "text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
                 )}>
-                  <Icon className={cn("w-4 h-4 mr-3 transition-colors", active ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300")} />
+                  <Icon className={cn("w-4 h-4 mr-3 transition-colors", active ? "text-[var(--accent-primary)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]")} />
                   <span className="text-sm">{route.name}</span>
-                  {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400"/>}
+                  {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"/>}
                 </Link>
               </li>
             );
           })}
         </ul>
       </div>
-      <div className="p-3 border-t border-slate-800">
+      <div className="p-3 border-t border-[var(--border)]">
         <button onClick={async () => {
           const { logoutUser } = await import("../../firebase/auth");
           const { toast } = await import("react-hot-toast");
           try { await logoutUser(); toast.success("Logged out"); window.location.href = "/login"; }
           catch { toast.error("Failed to log out"); }
-        }} className="w-full flex items-center p-3 rounded-xl font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-colors text-sm">
+        }} className="w-full flex items-center p-3 rounded-xl font-medium text-[var(--text-muted)] hover:bg-red-500/10 hover:text-red-500 transition-colors text-sm">
           <LogOut className="w-4 h-4 mr-3"/> Sign Out
         </button>
       </div>

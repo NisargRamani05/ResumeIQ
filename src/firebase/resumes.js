@@ -1,6 +1,6 @@
 import {
   collection, addDoc, updateDoc, deleteDoc,
-  doc, getDocs, query, where, orderBy, serverTimestamp
+  doc, getDocs, query, where, serverTimestamp
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -30,22 +30,24 @@ export const deleteResume = async (id) => {
   await deleteDoc(doc(db, "resumes", id));
 };
 
-/** Get all resumes for a specific user */
+/** Get all resumes for a specific user, sorted client-side by savedAt */
 export const getUserResumes = async (userId) => {
   try {
     const q = query(
       collection(db, "resumes"),
-      where("userId", "==", userId),
-      orderBy("savedAt", "desc")
+      where("userId", "==", userId)
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const resumes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sort client-side descending by savedAt (no composite index required)
+    return resumes.sort((a, b) => {
+      const aTime = a.savedAt?.toMillis?.() ?? 0;
+      const bTime = b.savedAt?.toMillis?.() ?? 0;
+      return bTime - aTime;
+    });
   } catch (err) {
-    console.error("[getUserResumes] orderBy failed, fallback:", err?.message);
-    // Fallback without ordering if index is missing
-    const q = query(collection(db, "resumes"), where("userId", "==", userId));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    console.error("[getUserResumes] failed:", err?.message);
+    return [];
   }
 };
 

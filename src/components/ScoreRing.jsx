@@ -35,7 +35,7 @@ export default function ScoreRing({ score, size = 160, strokeWidth = 12 }) {
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg className="transform -rotate-90" width={size} height={size}>
         <circle
-          className="text-slate-800"
+          className="text-[var(--bg-secondary)]"
           strokeWidth={strokeWidth}
           stroke="currentColor"
           fill="transparent"
@@ -61,7 +61,7 @@ export default function ScoreRing({ score, size = 160, strokeWidth = 12 }) {
         <span className="font-display text-4xl font-bold" style={{ color }}>
           {currentScore}
         </span>
-        <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest font-semibold mt-1">
+        <span className="text-xs text-[var(--text-muted)] uppercase tracking-widest font-bold mt-1">
           ATS Score
         </span>
       </div>
