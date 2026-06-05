@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import Sidebar from '../components/common/Sidebar';
-import { Briefcase, Bell, Menu } from 'lucide-react';
+import NotificationBell from '../components/common/NotificationBell';
+import { Briefcase, Menu } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 function DashboardLayout() {
@@ -26,10 +27,8 @@ function DashboardLayout() {
             <span className="text-xl font-display font-bold tracking-tight">ResumeIQ</span>
           </Link>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors rounded-full hover:bg-[var(--bg-secondary)]">
-            <Bell className="w-5 h-5" />
-          </button>
+        <div className="flex items-center gap-3">
+          <NotificationBell />
           <Link
             to={isAdmin ? '/admin/settings' : '/dashboard/settings'}
             className="h-8 w-8 rounded-full bg-[var(--accent-primary)] hover:ring-2 hover:ring-[var(--accent-primary)]/50 hover:ring-offset-2 hover:ring-offset-[var(--bg-primary)] flex items-center justify-center font-bold text-sm transition-all text-white"
@@ -56,3 +55,4 @@ function DashboardLayout() {
 }
 
 export default DashboardLayout;
+

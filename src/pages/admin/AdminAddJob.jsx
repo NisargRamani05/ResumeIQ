@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Upload, X, Plus, ChevronLeft, Loader, Save } from "lucide-react";
 import { createJob, updateJob, getJob, uploadCompanyLogo } from "../../firebase/jobs";
+import { broadcastToAllUsers } from "../../firebase/notifications";
 import toast from "react-hot-toast";
 
 const INP = "w-full bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--text-muted)] focus:border-[var(--accent-primary)] focus:ring-1 focus:ring-[var(--accent-primary)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none placeholder-[var(--text-muted)] transition-all";
@@ -65,8 +66,27 @@ export default function AdminAddJob() {
       let logoUrl = form.logoUrl || "";
       if (logoFile) logoUrl = await uploadCompanyLogo(logoFile);
       const payload = { ...form, logoUrl, skills: form.skills, preferredSkills: form.preferredSkills };
-      if (isEdit) { await updateJob(id, payload); toast.success("Job updated!"); }
-      else { await createJob(payload); toast.success("Job posted successfully!"); }
+      if (isEdit) {
+        await updateJob(id, payload);
+        toast.success("Job updated!");
+        // Notify all users about the job update (fire-and-forget)
+        broadcastToAllUsers({
+          type: "job_updated",
+          title: `Job Updated: ${form.role} at ${form.companyName}`,
+          body: `The posting for "${form.role}" at ${form.companyName} has been updated. Check the latest details!`,
+          link: `/dashboard/jobs/${id}`,
+        }).catch(console.error);
+      } else {
+        const newId = await createJob(payload);
+        toast.success("Job posted successfully!");
+        // Notify all users about the new job (fire-and-forget)
+        broadcastToAllUsers({
+          type: "job_new",
+          title: `New Job: ${form.role} at ${form.companyName}`,
+          body: `A new ${form.employmentType} position is available in ${form.location}. Apply before the deadline!`,
+          link: `/dashboard/jobs/${newId}`,
+        }).catch(console.error);
+      }
       navigate("/admin/jobs");
     } catch(err) {
       console.error(err);

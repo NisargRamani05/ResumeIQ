@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, FileText, CheckCircle, Loader, Briefcase } from "lucide-react";
 import { applyToJob, hasUserApplied } from "../../firebase/applications";
 import { getUserResumes } from "../../firebase/resumes";
+import { sendNotification } from "../../firebase/notifications";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 
@@ -56,6 +57,16 @@ export default function ResumeUploadModal({ job, onClose, onSuccess }) {
         jobTitle: job.role,
         companyName: job.companyName,
       });
+
+      // Notify admin about the new application (fire-and-forget)
+      const applicantName = currentUser.displayName || currentUser.email.split("@")[0];
+      sendNotification({
+        recipientId: "admin",
+        type: "application_received",
+        title: `New Application: ${job.role}`,
+        body: `${applicantName} applied for "${job.role}" at ${job.companyName}.`,
+        link: "/admin/applications",
+      }).catch(console.error);
 
       setDone(true);
       toast.success("Application submitted successfully!");

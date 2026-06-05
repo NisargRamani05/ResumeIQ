@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Search, ExternalLink, Filter, Loader } from "lucide-react";
 import { getAllApplications, updateApplicationStatus } from "../../firebase/applications";
 import { getJobs } from "../../firebase/jobs";
+import { sendNotification } from "../../firebase/notifications";
 import StatusBadge from "../../components/jobs/StatusBadge";
 import EmptyState from "../../components/ui/EmptyState";
 import { TableRowSkeleton } from "../../components/ui/LoadingSkeleton";
@@ -41,20 +42,65 @@ export default function AdminApplications() {
 
   useEffect(() => { load(); }, []);
 
-  const handleStatusChange = async (appId, newStatus) => {
-    if (newStatus === "Interview Scheduled") {
-      setSchedulingApp({ appId, newStatus });
-      return;
+  const buildStatusNotif = (newStatus, app, interviewDate) => {
+    const role = app.jobTitle || "the position";
+    const company = app.companyName || "the company";
+    switch (newStatus) {
+      case "Shortlisted":
+        return {
+          title: `You've been Shortlisted! 🎉`,
+          body: `Great news! Your application for "${role}" at ${company} has been shortlisted. Stay tuned for next steps.`,
+        };
+      case "Interview Scheduled":
+        return {
+          title: `Interview Scheduled 📅`,
+          body: `Your interview for "${role}" at ${company} has been scheduled${interviewDate ? ` on ${interviewDate}` : ""}. Be prepared!`,
+        };
+      case "Selected":
+        return {
+          title: `Congratulations! You're Selected 🏆`,
+          body: `You have been selected for "${role}" at ${company}! The HR team will reach out with further details.`,
+        };
+      case "Rejected":
+        return {
+          title: `Application Update for ${role}`,
+          body: `Thank you for applying to "${role}" at ${company}. Unfortunately, we won't be moving forward at this time. Keep applying!`,
+        };
+      default:
+        return {
+          title: `Application Status Updated`,
+          body: `Your application for "${role}" at ${company} has been updated to: ${newStatus}.`,
+        };
     }
-    await processStatusUpdate(appId, newStatus, null);
   };
 
-  const processStatusUpdate = async (appId, newStatus, interviewDate = null) => {
+  const handleStatusChange = async (app, newStatus) => {
+    if (newStatus === "Interview Scheduled") {
+      setSchedulingApp({ app, newStatus });
+      return;
+    }
+    await processStatusUpdate(app, newStatus, null);
+  };
+
+  const processStatusUpdate = async (app, newStatus, interviewDate = null) => {
+    const appId = app.id;
     setUpdating(appId);
     try {
       await updateApplicationStatus(appId, newStatus, interviewDate);
-      setApplications(p => p.map(a => a.id===appId ? {...a, status:newStatus, interviewDate: interviewDate || a.interviewDate} : a));
+      setApplications(p => p.map(a => a.id === appId ? { ...a, status: newStatus, interviewDate: interviewDate || a.interviewDate } : a));
       toast.success("Status updated");
+
+      // Notify the applicant about their status change (fire-and-forget)
+      if (app.userId) {
+        const { title, body } = buildStatusNotif(newStatus, app, interviewDate);
+        sendNotification({
+          recipientId: app.userId,
+          type: "status_changed",
+          title,
+          body,
+          link: "/dashboard/applications",
+        }).catch(console.error);
+      }
     } catch { toast.error("Failed to update status"); }
     finally { setUpdating(null); }
   };
@@ -147,7 +193,7 @@ export default function AdminApplications() {
                     <div className="flex items-center gap-2">
                       <select
                         value={app.status}
-                        onChange={e=>handleStatusChange(app.id, e.target.value)}
+                        onChange={e => handleStatusChange(app, e.target.value)}
                         disabled={updating===app.id}
                         className="bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-primary)] text-xs font-bold rounded-lg px-2 py-1.5 outline-none focus:border-[var(--accent-primary)] disabled:opacity-50"
                       >
@@ -171,7 +217,7 @@ export default function AdminApplications() {
         <InterviewScheduleModal 
           onClose={() => setSchedulingApp(null)}
           onSubmit={async (dateString) => {
-            await processStatusUpdate(schedulingApp.appId, schedulingApp.newStatus, dateString);
+            await processStatusUpdate(schedulingApp.app, schedulingApp.newStatus, dateString);
             setSchedulingApp(null);
           }}
         />

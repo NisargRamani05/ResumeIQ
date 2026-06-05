@@ -1,14 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, FileText, Pencil, Trash2, Eye, X, Calendar, Briefcase, Loader, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { useAuth } from '../../context/AuthContext';
 import { getUserResumes, deleteResume } from '../../firebase/resumes';
 import ResumeTemplate from '../../components/resume/ResumeTemplate';
 
 function ResumePreviewModal({ resume, onClose }) {
   const d = resume.data;
+  const resumeRef = useRef(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (!resumeRef.current) return;
+    setExporting(true);
+    try {
+      // Render the resume element to a canvas
+      const canvas = await html2canvas(resumeRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: resumeRef.current.scrollWidth,
+        windowHeight: resumeRef.current.scrollHeight,
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+      // A4 dimensions in mm
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
+      const imgH = (canvas.height * pdfW) / canvas.width;
+
+      let remaining = imgH;
+      let posY = 0;
+
+      pdf.addImage(imgData, 'JPEG', 0, posY, pdfW, imgH);
+      remaining -= pdfH;
+
+      while (remaining > 0) {
+        posY -= pdfH;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, posY, pdfW, imgH);
+        remaining -= pdfH;
+      }
+
+      pdf.save(`${resume.title || 'Resume'}.pdf`);
+      toast.success('Resume downloaded!');
+    } catch (err) {
+      console.error('PDF Export Error:', err);
+      // Fallback: open a print window
+      try {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+          <!DOCTYPE html><html><head>
+          <title>${resume.title || 'Resume'}</title>
+          <style>
+            @page { size: A4; margin: 10mm; }
+            body { margin: 0; font-family: 'Times New Roman', serif; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          </style>
+          </head><body>
+          ${resumeRef.current.innerHTML}
+          <script>window.onload=()=>{window.print();window.onafterprint=()=>window.close();}<\/script>
+          </body></html>
+        `);
+        printWindow.document.close();
+        toast.success('Print dialog opened — save as PDF!');
+      } catch (fe) {
+        toast.error('Export failed. Please try again.');
+      }
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       <motion.div 
@@ -26,8 +96,15 @@ function ResumePreviewModal({ resume, onClose }) {
           <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
             <h3 className="text-[var(--text-primary)] font-bold font-display">{resume.title}</h3>
             <div className="flex items-center gap-2">
-              <button className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2 text-sm font-semibold">
-                <Download className="w-4 h-4" /> Export
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/90 text-white text-sm font-semibold transition-all hover:scale-105 disabled:opacity-60 disabled:scale-100 shadow-[var(--glow)]"
+              >
+                {exporting
+                  ? <><Loader className="w-4 h-4 animate-spin" /> Exporting...</>
+                  : <><Download className="w-4 h-4" /> Export PDF</>
+                }
               </button>
               <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors">
                 <X className="w-5 h-5" />
@@ -35,7 +112,9 @@ function ResumePreviewModal({ resume, onClose }) {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-8 bg-[var(--bg-secondary)]/50">
-            <ResumeTemplate data={d} />
+            <div ref={resumeRef}>
+              <ResumeTemplate data={d} />
+            </div>
           </div>
         </motion.div>
       </motion.div>

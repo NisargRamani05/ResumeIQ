@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Play, Zap, Target, Search, FileText, CheckCircle2, LayoutDashboard, Star, ChevronRight, BarChart } from "lucide-react";
+import { ArrowRight, ArrowUp, Play, Zap, Target, Search, FileText, CheckCircle2, LayoutDashboard, Star, ChevronRight, BarChart } from "lucide-react";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const companies = ["Google", "Microsoft", "Meta", "Amazon", "Netflix", "Apple", "Spotify", "Tesla", "Airbnb"];
   
@@ -230,7 +243,42 @@ export default function Landing() {
           </div>
         </div>
       </section>
-      
+
+      {/* Scroll To Top Button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            key="scroll-top"
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            onClick={scrollToTop}
+            aria-label="Scroll to top"
+            style={{
+              position: "fixed",
+              bottom: "2rem",
+              right: "2rem",
+              zIndex: 9999,
+              width: "52px",
+              height: "52px",
+              borderRadius: "50%",
+              background: "var(--accent-primary)",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "var(--glow), 0 8px 32px rgba(0,0,0,0.3)",
+            }}
+            whileHover={{ scale: 1.15, y: -3 }}
+            whileTap={{ scale: 0.92 }}
+          >
+            <ArrowUp style={{ width: "22px", height: "22px", color: "#fff", strokeWidth: 2.5 }} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

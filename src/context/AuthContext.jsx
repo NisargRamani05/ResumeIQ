@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(user);
       
       if (user) {
-        // Fetch additional profile data from Firestore (non-blocking)
         getUserProfile(user.uid)
           .then(profile => {
             setUserProfile(profile);

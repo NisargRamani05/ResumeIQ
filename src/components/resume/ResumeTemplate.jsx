@@ -102,9 +102,12 @@ export default function ResumeTemplate({ data }) {
             {experiences.filter(e => e.jobTitle || e.employer).map((exp, i) => (
               <div key={i}>
                 <DottedRow
-                  left={`${exp.jobTitle}${exp.employer ? `, ${exp.employer}` : ''}`}
+                  left={exp.employer || exp.jobTitle}
                   right={`${exp.startMonth} ${exp.startYear}${(exp.startMonth || exp.startYear) ? ' — ' : ''}${exp.current ? 'Present' : `${exp.endMonth} ${exp.endYear}`}`}
                 />
+                {exp.jobTitle && exp.employer && (
+                  <p className="text-[13px] italic pl-6 mb-0.5 font-semibold">{exp.jobTitle}</p>
+                )}
                 {exp.city && (
                   <p className="text-[13px] italic pl-6 mb-0.5">{exp.city}</p>
                 )}

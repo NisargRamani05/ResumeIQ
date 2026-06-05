@@ -11,7 +11,7 @@ function ProtectedRoute({ children, adminOnly = false }) {
     return <Navigate to="/login" replace />;
   }
 
-  // Admin authorization check
+  
   if (adminOnly && currentUser.email !== 'admin@gmail.com') {
     toast.error("Unauthorized. Admin access required.");
     return <Navigate to="/dashboard" replace />;

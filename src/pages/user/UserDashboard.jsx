@@ -21,6 +21,8 @@ export default function UserDashboard() {
   const [selectedResume, setSelectedResume] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  // Cache AI scores per resume id so widget and modal show the same score
+  const [analysisCache, setAnalysisCache] = useState({});
 
   useEffect(() => {
     if (!currentUser) return;
@@ -82,6 +84,12 @@ export default function UserDashboard() {
 
   const handleAnalyzeClick = async (resume) => {
     setSelectedResume(resume);
+    // If we already have a cached result for this resume, show it immediately
+    if (analysisCache[resume.id]) {
+      setAnalysisResult(analysisCache[resume.id]);
+      setIsAnalyzing(false);
+      return;
+    }
     setAnalysisResult(null);
     setIsAnalyzing(true);
     
@@ -89,6 +97,8 @@ export default function UserDashboard() {
       const text = resumeToText(resume.data);
       const result = await analyzeResume(text, "");
       setAnalysisResult(result);
+      // Cache the result so the widget score stays consistent
+      setAnalysisCache(prev => ({ ...prev, [resume.id]: result }));
     } catch (err) {
       toast.error(err.message || "Analysis failed");
       setSelectedResume(null);
@@ -263,16 +273,26 @@ export default function UserDashboard() {
               </div>
             ) : (
               resumes.slice(0, 5).map((r, i) => {
-                const d = r.data || {};
-                let score = 0;
-                if (d.contact?.firstName && d.contact?.email) score += 15;
-                if (d.summary?.length > 20) score += 15;
-                if (d.experiences?.filter(e => e.jobTitle).length > 0) score += 30;
-                if (d.experiences?.some(e => e.bullets?.filter(b=>b.trim()).length > 1)) score += 10;
-                if (d.educations?.filter(e => e.school).length > 0) score += 15;
-                if (d.skills?.filter(s => s.trim()).length > 2) score += 15;
-                score = Math.min(100, score);
-                
+                // Use AI-analyzed score if available, otherwise fall back to local estimate
+                const cached = analysisCache[r.id];
+                let score;
+                let isAiScore = false;
+
+                if (cached) {
+                  score = cached.score ?? 0;
+                  isAiScore = true;
+                } else {
+                  const d = r.data || {};
+                  let s = 0;
+                  if (d.contact?.firstName && d.contact?.email) s += 15;
+                  if (d.summary?.length > 20) s += 15;
+                  if (d.experiences?.filter(e => e.jobTitle).length > 0) s += 30;
+                  if (d.experiences?.some(e => e.bullets?.filter(b=>b.trim()).length > 1)) s += 10;
+                  if (d.educations?.filter(e => e.school).length > 0) s += 15;
+                  if (d.skills?.filter(s => s.trim()).length > 2) s += 15;
+                  score = Math.min(100, s);
+                }
+
                 const isHigh = score >= 80;
                 const isMed = score >= 60 && score < 80;
                 const color = isHigh ? "#10b981" : isMed ? "#eab308" : "#ef4444";
@@ -287,10 +307,17 @@ export default function UserDashboard() {
                     className="space-y-3 group cursor-pointer hover:bg-[var(--bg-secondary)]/30 p-2 -mx-2 rounded-xl transition-all"
                   >
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-[var(--text-primary)] truncate pr-4 group-hover:text-[var(--accent-primary)] transition-colors">
-                        {r.title}
-                      </p>
-                      <span className="text-sm font-display font-bold" style={{ color }}>{score}%</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate group-hover:text-[var(--accent-primary)] transition-colors">
+                          {r.title}
+                        </p>
+                        {!isAiScore && (
+                          <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20">
+                            AI
+                          </span>
+                        )}
+                      </div>
+                      <span className="shrink-0 ml-2 text-sm font-display font-bold" style={{ color }}>{score}%</span>
                     </div>
                     <div className="h-2 w-full bg-[var(--bg-secondary)] rounded-full overflow-hidden shadow-inner">
                       <motion.div 
@@ -303,6 +330,9 @@ export default function UserDashboard() {
                         <div className="absolute inset-0 bg-white/20 w-full h-full animate-[scan_2s_linear_infinite]" />
                       </motion.div>
                     </div>
+                    {!isAiScore && (
+                      <p className="text-[10px] text-[var(--text-muted)] -mt-1">Click to get AI score</p>
+                    )}
                   </motion.div>
                 );
               })

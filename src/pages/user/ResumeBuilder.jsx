@@ -43,7 +43,7 @@ export default function ResumeBuilder() {
   const [achievements, setAchievements] = useState([""]);
   const [dir, setDir] = useState(1);
 
-  // Load existing resume from Firestore if editing
+
   useEffect(() => {
     if (!isEditing || !currentUser) return;
     (async () => {
@@ -178,7 +178,7 @@ export default function ResumeBuilder() {
                         </div>
                         <div className="grid grid-cols-2 gap-5">
                           <div><label className={LBL}>Job Title</label><input className={INP} value={exp.jobTitle} onChange={e => updExp(exp.id, "jobTitle", e.target.value)} placeholder="Software Engineer" /></div>
-                          <div><label className={LBL}>Employer</label><input className={INP} value={exp.employer} onChange={e => updExp(exp.id, "employer", e.target.value)} placeholder="Company Name" /></div>
+                          <div><label className={LBL}>Company Name</label><input className={INP} value={exp.employer} onChange={e => updExp(exp.id, "employer", e.target.value)} placeholder="e.g. Infosys, Google" /></div>
                           <div className="col-span-2"><label className={LBL}>City</label><input className={INP} value={exp.city} onChange={e => updExp(exp.id, "city", e.target.value)} placeholder="Mumbai" /></div>
                         </div>
                         <div className="grid grid-cols-2 gap-5">
@@ -321,6 +321,15 @@ export default function ResumeBuilder() {
             const done = i < step;
             const cur = i === step;
             const last = i === STEPS.length - 1;
+
+            // Dynamic description for the Experience step
+            const firstExp = experiences[0];
+            const expEmployer = firstExp?.employer?.trim();
+            const expJobTitle = firstExp?.jobTitle?.trim();
+            const stepDesc = i === 1 && (expEmployer || expJobTitle)
+              ? null   // rendered separately below
+              : s.desc;
+
             return (
               <div key={s.id} className="relative flex gap-5 cursor-pointer group" onClick={() => { setDir(i > step ? 1 : -1); setStep(i); }}>
                 {/* Vertical connector line */}
@@ -338,9 +347,29 @@ export default function ResumeBuilder() {
                   }
                 </div>
                 {/* Label */}
-                <div className="pb-10 pt-1">
+                <div className="pb-10 pt-1 min-w-0">
                   <p className={`text-sm font-bold transition-colors ${cur ? "text-[var(--accent-primary)]" : done ? "text-[var(--text-primary)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`}>{s.label}</p>
-                  <p className={`text-xs mt-1 font-medium transition-colors ${cur ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"}`}>{s.desc}</p>
+                  {i === 1 && (expEmployer || expJobTitle) ? (
+                    <div className="mt-1 space-y-0.5">
+                      {expEmployer && (
+                        <p className={`text-xs font-bold truncate transition-colors ${cur ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"}`}>
+                          {expEmployer}
+                        </p>
+                      )}
+                      {expJobTitle && (
+                        <p className={`text-xs font-medium truncate transition-colors ${cur ? "text-[var(--accent-primary)]/80" : "text-[var(--text-muted)]"}`}>
+                          {expJobTitle}
+                        </p>
+                      )}
+                      {experiences.length > 1 && (
+                        <p className="text-[10px] text-[var(--text-muted)] font-semibold mt-0.5">
+                          +{experiences.length - 1} more position{experiences.length - 1 > 1 ? "s" : ""}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className={`text-xs mt-1 font-medium transition-colors ${cur ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"}`}>{s.desc}</p>
+                  )}
                 </div>
               </div>
             );
