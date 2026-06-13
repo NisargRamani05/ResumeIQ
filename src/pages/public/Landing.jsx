@@ -20,7 +20,7 @@ export default function Landing() {
   };
 
   const companies = ["Google", "Microsoft", "Meta", "Amazon", "Netflix", "Apple", "Spotify", "Tesla", "Airbnb"];
-  
+
   const features = [
     { icon: FileText, title: "AI Resume Builder", desc: "Build ATS-friendly resumes in minutes with intelligent suggestions." },
     { icon: Zap, title: "ATS Score Checker", desc: "Instantly see how likely your resume is to pass automated HR filters." },
@@ -38,30 +38,24 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] overflow-hidden">
-      
+
       {/* Background Ambience */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[500px] bg-[var(--accent-primary)]/10 blur-[150px] pointer-events-none rounded-b-full mix-blend-screen" />
       <div className="absolute inset-0 bg-grid-pattern pointer-events-none" />
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center min-h-[90vh] justify-center">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="z-10 flex flex-col items-center max-w-4xl"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border)] bg-[var(--bg-secondary)]/50 backdrop-blur-md text-xs font-bold text-[var(--accent-primary)] uppercase tracking-widest mb-8">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-primary)] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent-primary)]"></span>
-            </span>
-            ResumeIQ v2.0 is Live
-          </div>
+
 
           <h1 className="font-display text-5xl md:text-7xl font-bold text-[var(--text-primary)] leading-[1.1] mb-6 tracking-tight">
-            Build the perfect resume.<br/>
-            <span className="gradient-text">Powered by AI.</span>
+            Create Resumes. Analyze ATS. Track Jobs.<br />
+            <span className="gradient-text">All in One Platform.</span>
           </h1>
 
           <p className="text-lg md:text-xl text-[var(--text-muted)] max-w-2xl mb-10 leading-relaxed">
@@ -69,7 +63,7 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4">
-            <button 
+            <button
               onClick={() => navigate('/upload')}
               className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 w-full sm:w-auto text-sm font-bold text-white bg-[var(--accent-primary)] rounded-full overflow-hidden transition-all hover:scale-105 shadow-[var(--glow)]"
             >
@@ -109,7 +103,7 @@ export default function Landing() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feat, i) => (
-            <motion.div 
+            <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -131,7 +125,7 @@ export default function Landing() {
       <section className="py-20 px-6 relative z-10">
         <div className="max-w-7xl mx-auto bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-primary)] border border-[var(--border)] rounded-[40px] p-8 md:p-16 overflow-hidden relative">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-[var(--accent-primary)]/5 blur-[100px] pointer-events-none" />
-          
+
           <div className="flex flex-col lg:flex-row items-center gap-16 relative z-10">
             <div className="flex-1">
               <h2 className="font-display text-4xl font-bold text-[var(--text-primary)] mb-6">
@@ -148,9 +142,9 @@ export default function Landing() {
                 ))}
               </ul>
             </div>
-            
+
             <div className="flex-1 w-full perspective-[2000px]">
-              <motion.div 
+              <motion.div
                 initial={{ rotateY: 20, rotateX: 10, scale: 0.9 }}
                 whileInView={{ rotateY: -10, rotateX: 5, scale: 1 }}
                 viewport={{ once: true, margin: "-100px" }}
@@ -165,11 +159,11 @@ export default function Landing() {
                 </div>
                 <div className="p-6 bg-[var(--bg-primary)] grid grid-cols-2 gap-4">
                   <div className="col-span-2 h-24 rounded-xl bg-[var(--bg-secondary)] p-4 flex items-center justify-between border border-[var(--border)]">
-                     <div>
-                       <div className="h-3 w-20 bg-[var(--text-muted)]/30 rounded mb-2" />
-                       <div className="h-6 w-32 bg-[var(--accent-primary)]/80 rounded" />
-                     </div>
-                     <div className="w-12 h-12 rounded-full border-4 border-[var(--accent-primary)] border-l-transparent animate-spin" />
+                    <div>
+                      <div className="h-3 w-20 bg-[var(--text-muted)]/30 rounded mb-2" />
+                      <div className="h-6 w-32 bg-[var(--accent-primary)]/80 rounded" />
+                    </div>
+                    <div className="w-12 h-12 rounded-full border-4 border-[var(--accent-primary)] border-l-transparent animate-spin" />
                   </div>
                   <div className="h-32 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] p-4">
                     <div className="h-2 w-full bg-[var(--text-muted)]/20 rounded mb-2" />
@@ -192,10 +186,10 @@ export default function Landing() {
         <h2 className="text-center font-display text-4xl font-bold text-[var(--text-primary)] mb-16">
           Loved by top <span className="gradient-text">talent</span>.
         </h2>
-        
+
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
-            <motion.div 
+            <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -204,7 +198,7 @@ export default function Landing() {
               className="glass-card p-8 rounded-3xl relative"
             >
               <div className="flex gap-1 mb-6">
-                {[1,2,3,4,5].map(star => <Star key={star} className="w-5 h-5 fill-[var(--accent-primary)] text-[var(--accent-primary)]" />)}
+                {[1, 2, 3, 4, 5].map(star => <Star key={star} className="w-5 h-5 fill-[var(--accent-primary)] text-[var(--accent-primary)]" />)}
               </div>
               <p className="text-[var(--text-primary)] text-lg mb-8">"{t.text}"</p>
               <div className="flex items-center gap-4">
@@ -226,7 +220,7 @@ export default function Landing() {
         <div className="relative w-full max-w-5xl rounded-[40px] overflow-hidden p-16 text-center border border-white/10 shadow-2xl">
           <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] opacity-90 mix-blend-multiply dark:mix-blend-color" />
           <div className="absolute inset-0 bg-[var(--bg-primary)] opacity-80" />
-          
+
           <div className="relative z-10">
             <h2 className="font-display text-4xl md:text-6xl font-bold text-[var(--text-primary)] mb-6">
               Ready to get hired?
@@ -234,7 +228,7 @@ export default function Landing() {
             <p className="text-[var(--text-muted)] text-xl max-w-2xl mx-auto mb-10">
               Join thousands of professionals landing their dream jobs with ResumeIQ.
             </p>
-            <button 
+            <button
               onClick={() => navigate('/register')}
               className="inline-flex items-center gap-2 px-10 py-5 text-lg font-bold text-white bg-[var(--accent-primary)] rounded-full hover:scale-105 transition-transform shadow-[var(--glow)]"
             >
